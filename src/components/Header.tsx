@@ -1,9 +1,11 @@
 
 import React, { useState } from 'react';
-import { Clock, CheckSquare, Github } from 'lucide-react';
+import { Clock, CheckSquare, Github, LogOut } from 'lucide-react';
 import { CustomButton } from '@/components/ui/custom-button';
 import { TimerMode } from '@/types';
 import { useTimerContext } from '@/context/TimerContext';
+import { useAuth } from '@/context/AuthContext';
+import { toast } from 'sonner';
 
 interface HeaderProps {
   activeTab: 'tasks' | 'timer';
@@ -12,11 +14,21 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
   const { timerState, setTimerMode } = useTimerContext();
+  const { user, signOut } = useAuth();
   const [showTimerModes, setShowTimerModes] = useState(false);
 
   const handleTimerModeChange = (mode: TimerMode) => {
     setTimerMode(mode);
     setShowTimerModes(false);
+  };
+  
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast.success('Logged out successfully');
+    } catch (error) {
+      toast.error('Failed to log out');
+    }
   };
 
   return (
@@ -77,10 +89,17 @@ const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
               </CustomButton>
             </div>
 
-            <CustomButton variant="glass" size="sm" className="flex items-center">
-              <Github className="w-4 h-4 mr-2" />
-              Login
-            </CustomButton>
+            {user ? (
+              <CustomButton variant="glass" size="sm" className="flex items-center" onClick={handleSignOut}>
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </CustomButton>
+            ) : (
+              <CustomButton variant="glass" size="sm" className="flex items-center">
+                <Github className="w-4 h-4 mr-2" />
+                Login
+              </CustomButton>
+            )}
           </div>
         </div>
         
