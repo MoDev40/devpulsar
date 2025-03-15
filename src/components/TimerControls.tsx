@@ -2,14 +2,14 @@
 import React from 'react';
 import { Play, Pause, RotateCcw, SkipForward } from 'lucide-react';
 import { CustomButton } from '@/components/ui/custom-button';
-import { useTimerContext } from '@/context/TimerContext';
+import { useTimerStore } from '@/store/timerStore';
 
 const TimerControls: React.FC = () => {
-  const { timerState, startTimer, pauseTimer, resetTimer, skipSession } = useTimerContext();
+  const { isRunning, isPaused, startTimer, pauseTimer, resetTimer, skipSession } = useTimerStore();
   
   return (
     <div className="flex justify-center space-x-2 mt-8">
-      {!timerState.isRunning ? (
+      {!isRunning ? (
         <CustomButton
           variant="default"
           size="lg"
@@ -21,13 +21,13 @@ const TimerControls: React.FC = () => {
         </CustomButton>
       ) : (
         <CustomButton
-          variant={timerState.isPaused ? "outline" : "default"}
+          variant={isPaused ? "outline" : "default"}
           size="lg"
           onClick={pauseTimer}
           className="flex items-center"
         >
           <Pause className="w-5 h-5 mr-2" />
-          {timerState.isPaused ? "Resume" : "Pause"}
+          {isPaused ? "Resume" : "Pause"}
         </CustomButton>
       )}
       

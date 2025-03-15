@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Task, TaskCategory, TaskPriority } from '@/types';
-import { useAuth } from '@/context/AuthContext';
+import { useAuthStore } from '@/store/authStore';
 import { 
   fetchTasks, 
   createTask, 
@@ -13,7 +13,7 @@ import {
 
 export function useTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   // Fetch tasks when user changes
   useEffect(() => {

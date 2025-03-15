@@ -1,12 +1,19 @@
 
 import React, { useState, useEffect } from 'react';
-import { useTimerContext } from '@/context/TimerContext';
+import { useTimerStore } from '@/store/timerStore';
 import { Slider } from '@/components/ui/slider';
 import TimerControls from './TimerControls';
 
 const ProgressTimer: React.FC = () => {
-  const { timerState, startTimer, updateSettings } = useTimerContext();
-  const [customDuration, setCustomDuration] = useState(timerState.settings.workDuration);
+  const { 
+    timeRemaining, 
+    progress, 
+    isRunning, 
+    settings, 
+    updateSettings 
+  } = useTimerStore();
+  
+  const [customDuration, setCustomDuration] = useState(settings.workDuration);
   
   // Format time as mm:ss
   const formatTime = (seconds: number) => {
@@ -16,14 +23,23 @@ const ProgressTimer: React.FC = () => {
   };
   
   // Calculate percentage completed
-  const percentComplete = Math.round(timerState.progress * 100);
+  const percentComplete = Math.round(progress * 100);
   
   // Update custom duration for progress timer
   useEffect(() => {
-    if (!timerState.isRunning) {
+    if (!isRunning) {
       updateSettings({ workDuration: customDuration });
     }
-  }, [customDuration, timerState.isRunning, updateSettings]);
+  }, [customDuration, isRunning, updateSettings]);
+  
+  // Update document title with timer
+  useEffect(() => {
+    document.title = `${formatTime(timeRemaining)} - ${percentComplete}%`;
+    
+    return () => {
+      document.title = 'DevPulsar';
+    };
+  }, [timeRemaining, percentComplete]);
   
   const handleSliderChange = (value: number[]) => {
     setCustomDuration(value[0]);
@@ -33,7 +49,7 @@ const ProgressTimer: React.FC = () => {
     <div className="timer-card max-w-md mx-auto w-full animate-fade-in">
       <div className="w-full flex flex-col items-center mb-6">
         <div className="text-center mb-8">
-          <div className="timer-display mb-1">{formatTime(timerState.timeRemaining)}</div>
+          <div className="timer-display mb-1">{formatTime(timeRemaining)}</div>
           <p className="text-muted-foreground">{percentComplete}% Complete</p>
         </div>
         
@@ -48,7 +64,7 @@ const ProgressTimer: React.FC = () => {
         </div>
       </div>
       
-      {!timerState.isRunning && (
+      {!isRunning && (
         <div className="mb-8 w-full px-4">
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm text-muted-foreground">Duration</span>

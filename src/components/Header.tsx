@@ -1,9 +1,7 @@
-
 import React from 'react';
 import { Clock, CheckSquare, Github, LogOut } from 'lucide-react';
 import { CustomButton } from '@/components/ui/custom-button';
-import { TimerMode } from '@/types';
-import { useTimerContext } from '@/context/TimerContext';
+import { useTimerStore } from '@/store/timerStore';
 import { useAuthStore } from '@/store/authStore';
 import { toast } from 'sonner';
 
@@ -13,12 +11,12 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
-  const { timerState, setTimerMode } = useTimerContext();
+  const { mode, setTimerMode } = useTimerStore();
   const { user, signOut } = useAuthStore();
   const [showTimerModes, setShowTimerModes] = React.useState(false);
 
-  const handleTimerModeChange = (mode: TimerMode) => {
-    setTimerMode(mode);
+  const handleTimerModeChange = (timerMode: 'pomodoro' | 'progress') => {
+    setTimerMode(timerMode);
     setShowTimerModes(false);
   };
   
@@ -67,7 +65,7 @@ const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
                       <div className="py-1 bg-white rounded-md shadow-lg border border-border/40 animate-fade-in">
                         <button
                           className={`block w-full px-4 py-2 text-left text-sm ${
-                            timerState.mode === 'pomodoro' ? 'bg-muted' : 'hover:bg-muted'
+                            mode === 'pomodoro' ? 'bg-muted' : 'hover:bg-muted'
                           }`}
                           onClick={() => handleTimerModeChange('pomodoro')}
                         >
@@ -75,7 +73,7 @@ const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
                         </button>
                         <button
                           className={`block w-full px-4 py-2 text-left text-sm ${
-                            timerState.mode === 'progress' ? 'bg-muted' : 'hover:bg-muted'
+                            mode === 'progress' ? 'bg-muted' : 'hover:bg-muted'
                           }`}
                           onClick={() => handleTimerModeChange('progress')}
                         >
@@ -125,14 +123,14 @@ const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
         {activeTab === 'timer' && (
           <div className="mt-4 flex justify-center space-x-2">
             <CustomButton
-              variant={timerState.mode === 'pomodoro' ? 'default' : 'outline'}
+              variant={mode === 'pomodoro' ? 'default' : 'outline'}
               size="sm"
               onClick={() => handleTimerModeChange('pomodoro')}
             >
               Pomodoro
             </CustomButton>
             <CustomButton
-              variant={timerState.mode === 'progress' ? 'default' : 'outline'}
+              variant={mode === 'progress' ? 'default' : 'outline'}
               size="sm"
               onClick={() => handleTimerModeChange('progress')}
             >

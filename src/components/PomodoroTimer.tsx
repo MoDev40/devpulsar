@@ -1,10 +1,15 @@
 
-import React from 'react';
-import { useTimerContext } from '@/context/TimerContext';
+import React, { useEffect } from 'react';
+import { useTimerStore } from '@/store/timerStore';
 import TimerControls from './TimerControls';
 
 const PomodoroTimer: React.FC = () => {
-  const { timerState } = useTimerContext();
+  const { 
+    timeRemaining, 
+    progress, 
+    currentSession, 
+    completedSessions 
+  } = useTimerStore();
   
   // Format time as mm:ss
   const formatTime = (seconds: number) => {
@@ -21,19 +26,28 @@ const PomodoroTimer: React.FC = () => {
   
   // Determine session color
   const sessionColor = 
-    timerState.currentSession === 'work'
+    currentSession === 'work'
       ? 'hsl(var(--primary))'
-      : timerState.currentSession === 'break'
+      : currentSession === 'break'
         ? 'hsl(var(--accent-foreground))'
         : 'hsl(143, 85%, 53%)'; // Green for long break
   
   // Determine session label
   const sessionLabel = 
-    timerState.currentSession === 'work'
+    currentSession === 'work'
       ? 'Work Session'
-      : timerState.currentSession === 'break'
+      : currentSession === 'break'
         ? 'Short Break'
         : 'Long Break';
+  
+  // Update document title with timer
+  useEffect(() => {
+    document.title = `${formatTime(timeRemaining)} - ${sessionLabel}`;
+    
+    return () => {
+      document.title = 'DevPulsar';
+    };
+  }, [timeRemaining, sessionLabel]);
   
   return (
     <div className="timer-card max-w-md mx-auto w-full animate-fade-in">
@@ -62,16 +76,16 @@ const PomodoroTimer: React.FC = () => {
             stroke={sessionColor}
             strokeWidth="8"
             strokeDasharray={2 * Math.PI * 120}
-            strokeDashoffset={calculateStrokeDashOffset(timerState.progress)}
+            strokeDashoffset={calculateStrokeDashOffset(progress)}
             strokeLinecap="round"
             className="transition-all duration-1000 ease-linear"
           />
         </svg>
         
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <div className="timer-display">{formatTime(timerState.timeRemaining)}</div>
+          <div className="timer-display">{formatTime(timeRemaining)}</div>
           <div className="text-sm text-muted-foreground mt-2">
-            {timerState.completedSessions} sessions completed
+            {completedSessions} sessions completed
           </div>
         </div>
       </div>
