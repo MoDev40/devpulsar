@@ -191,8 +191,8 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
               ...task,
               title: data.title,
               completed: data.completed,
-              category: data.category,
-              priority: data.priority,
+              category: data.category as TaskCategory,
+              priority: data.priority as TaskPriority,
             } : task
           )
         );
