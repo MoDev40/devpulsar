@@ -1,7 +1,6 @@
-
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { TimerMode, TimerSettings, TimerState } from '@/types';
-import { toast } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 
 interface TimerContextType {
   timerState: TimerState;
