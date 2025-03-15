@@ -1,10 +1,10 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Clock, CheckSquare, Github, LogOut } from 'lucide-react';
 import { CustomButton } from '@/components/ui/custom-button';
 import { TimerMode } from '@/types';
 import { useTimerContext } from '@/context/TimerContext';
-import { useAuth } from '@/context/AuthContext';
+import { useAuthStore } from '@/store/authStore';
 import { toast } from 'sonner';
 
 interface HeaderProps {
@@ -14,8 +14,8 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
   const { timerState, setTimerMode } = useTimerContext();
-  const { user, signOut } = useAuth();
-  const [showTimerModes, setShowTimerModes] = useState(false);
+  const { user, signOut } = useAuthStore();
+  const [showTimerModes, setShowTimerModes] = React.useState(false);
 
   const handleTimerModeChange = (mode: TimerMode) => {
     setTimerMode(mode);
@@ -25,7 +25,6 @@ const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
   const handleSignOut = async () => {
     try {
       await signOut();
-      toast.success('Logged out successfully');
     } catch (error) {
       toast.error('Failed to log out');
     }

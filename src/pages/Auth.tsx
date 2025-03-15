@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useForm } from "react-hook-form";
@@ -16,6 +17,8 @@ import { Input } from "@/components/ui/input";
 import { CustomButton } from "@/components/ui/custom-button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
+import { Github } from "lucide-react";
+import { useAuthStore } from "@/store/authStore";
 
 const authSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -29,6 +32,12 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { user, signInWithGithub } = useAuthStore();
+
+  // Redirect if already logged in
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
 
   const form = useForm<AuthFormValues>({
     resolver: zodResolver(authSchema),
@@ -69,6 +78,10 @@ const Auth = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGithubSignIn = async () => {
+    await signInWithGithub();
   };
 
   return (
@@ -131,6 +144,30 @@ const Auth = () => {
             </CustomButton>
           </form>
         </Form>
+
+        <div className="mt-4">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">
+                Or continue with
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <CustomButton
+              variant="outline"
+              className="w-full"
+              onClick={handleGithubSignIn}
+            >
+              <Github className="mr-2 h-4 w-4" />
+              GitHub
+            </CustomButton>
+          </div>
+        </div>
 
         <div className="mt-6 text-center">
           <button
