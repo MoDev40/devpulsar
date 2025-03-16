@@ -2,6 +2,7 @@
 import React, { useEffect } from 'react';
 import { useTimerStore } from '@/store/timerStore';
 import TimerControls from './TimerControls';
+import { formatTime } from '@/store/timerStore/timerUtils';
 
 const PomodoroTimer: React.FC = () => {
   const { 
@@ -10,13 +11,6 @@ const PomodoroTimer: React.FC = () => {
     currentSession, 
     completedSessions 
   } = useTimerStore();
-  
-  // Format time as mm:ss
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
   
   // Calculate stroke dash offset for the progress ring
   const calculateStrokeDashOffset = (progress: number) => {

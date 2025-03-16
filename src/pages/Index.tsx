@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import Header from '@/components/Header';
-import TaskList from '@/components/TaskList';
-import TimerContainer from '@/components/TimerContainer';
+import Header from '@/components/navigation/Header';
+import TaskList from '@/components/tasks/TaskList';
+import TimerContainer from '@/components/timer/TimerContainer';
 import { useTaskStore } from '@/store/taskStore';
 import { useAuthStore } from '@/store/authStore';
 

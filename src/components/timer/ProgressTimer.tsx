@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useTimerStore } from '@/store/timerStore';
 import { Slider } from '@/components/ui/slider';
 import TimerControls from './TimerControls';
+import { formatTime } from '@/store/timerStore/timerUtils';
 
 const ProgressTimer: React.FC = () => {
   const { 
@@ -14,13 +15,6 @@ const ProgressTimer: React.FC = () => {
   } = useTimerStore();
   
   const [customDuration, setCustomDuration] = useState(settings.workDuration);
-  
-  // Format time as mm:ss
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
   
   // Calculate percentage completed
   const percentComplete = Math.round(progress * 100);

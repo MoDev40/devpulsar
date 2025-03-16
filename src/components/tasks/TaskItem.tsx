@@ -1,6 +1,7 @@
+
 import React, { useState } from 'react';
 import { Task } from '@/types';
-import { Trash, Edit, Check, ChevronUp, ChevronDown, X } from 'lucide-react';
+import { Trash, Edit, Check, X } from 'lucide-react';
 import { CustomButton } from '@/components/ui/custom-button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useTaskStore } from '@/store/taskStore';
@@ -106,7 +107,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
       <div className="flex items-center mr-3">
         <Checkbox
           checked={task.completed}
-          onCheckedChange={() => toggleTaskCompletion(task.id,!task.completed)}
+          onCheckedChange={() => toggleTaskCompletion(task.id, !task.completed)}
           className="data-[state=checked]:bg-primary"
         />
       </div>

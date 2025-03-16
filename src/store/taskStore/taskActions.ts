@@ -1,5 +1,7 @@
-import { create } from "zustand";
-import { Task, TaskCategory, TaskPriority } from "@/types";
+
+import { toast } from 'sonner';
+import { supabase } from "@/integrations/supabase/client";
+import { useAuthStore } from '@/store/authStore';
 import {
   fetchTasks,
   createTask,
@@ -7,44 +9,18 @@ import {
   removeTask,
   updateTask,
   fetchTaskById,
-} from "@/api/taskApi";
-import { useAuthStore } from "./authStore";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+} from '@/api/taskApi';
+import { Task, TaskCategory, TaskPriority } from '@/types';
+import { TaskStore } from './taskTypes';
 
-interface TaskState {
-  tasks: Task[];
-  loading: boolean;
-  error: string | null;
-
-  // Actions
-  loadTasks: () => Promise<void>;
-  addTask: (
-    title: string,
-    category: TaskCategory,
-    priority: TaskPriority
-  ) => Promise<void>;
-  toggleTaskCompletion: (id: string, isComplete: boolean) => Promise<void>;
-  deleteTask: (id: string) => Promise<void>;
-  editTask: (
-    id: string,
-    updates: Partial<Omit<Task, "id" | "createdAt">>
-  ) => Promise<void>;
-
-  // Subscription management
-  subscribeToTasks: () => void;
-  unsubscribeFromTasks: () => void;
-}
-
-export const useTaskStore = create<TaskState>((set, get) => {
-  // Create a channel for real-time updates
-  let channel: any = null;
+export const createTaskActions = (
+  set: (state: Partial<TaskStore>) => void,
+  get: () => TaskStore
+) => {
+  // Channel reference for Supabase real-time
+  let channel: ReturnType<typeof supabase.channel> | null = null;
 
   return {
-    tasks: [],
-    loading: false,
-    error: null,
-
     loadTasks: async () => {
       const { user } = useAuthStore.getState();
 
@@ -180,7 +156,7 @@ export const useTaskStore = create<TaskState>((set, get) => {
             }));
           }
         } catch (fetchError) {
-          // If we can't fetch the current state, revert to the previous state
+          // If we can't fetch the current state, just set the error
           set((state) => ({
             error: error.message,
           }));
@@ -226,4 +202,4 @@ export const useTaskStore = create<TaskState>((set, get) => {
       }
     },
   };
-});
+};
