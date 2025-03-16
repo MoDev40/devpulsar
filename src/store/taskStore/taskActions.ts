@@ -14,7 +14,7 @@ import { Task, TaskCategory, TaskPriority } from '@/types';
 import { TaskStore } from './taskTypes';
 
 export const createTaskActions = (
-  set: (state: Partial<TaskStore>) => void,
+  set: (state: Partial<TaskStore> | ((state: TaskStore) => Partial<TaskStore>)) => void,
   get: () => TaskStore
 ) => {
   // Channel reference for Supabase real-time
