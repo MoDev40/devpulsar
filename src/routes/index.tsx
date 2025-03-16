@@ -1,10 +1,10 @@
-
 import { createBrowserRouter } from "react-router-dom";
 import Auth from "@/pages/Auth";
 import NotFound from "@/pages/NotFound";
 import RootLayout from "@/layout/root-layout";
 import Index from "@/pages/Index";
 import GitHub from "@/pages/GitHub";
+import TimerContainer from "@/components/timer/TimerContainer";
 
 export const router = createBrowserRouter([
   {
@@ -15,6 +15,10 @@ export const router = createBrowserRouter([
       {
         path: "/github",
         element: <GitHub />,
+      },
+      {
+        path: "/timer",
+        element: <TimerContainer />,
       },
     ],
     errorElement: <NotFound />,

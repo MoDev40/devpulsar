@@ -1,10 +1,10 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { useAuthStore } from '@/store/authStore';
-import { CustomButton } from '@/components/ui/custom-button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
-import { Menu, X, LogOut, Github } from 'lucide-react';
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
+import { useAuthStore } from "@/store/authStore";
+import { CustomButton } from "@/components/ui/custom-button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Menu, X, LogOut, Github } from "lucide-react";
 
 const Header: React.FC = () => {
   const { user, signOut } = useAuthStore();
@@ -28,22 +28,22 @@ const Header: React.FC = () => {
       <div className="container flex h-14 items-center">
         <div className="mr-4 flex">
           <Link to="/" className="mr-6 flex items-center space-x-2">
-            <span className="font-bold">TaskFlow</span>
+            <span className="font-bold capitalize">devpulsar</span>
           </Link>
 
           <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
             <Link
-              to="/"
+              to="/timer"
               className={`transition-colors hover:text-foreground/80 ${
-                isActive('/') ? 'text-foreground' : 'text-foreground/60'
+                isActive("/timer") ? "text-foreground" : "text-foreground/60"
               }`}
             >
-              Tasks
+              Timer
             </Link>
             <Link
               to="/github"
               className={`transition-colors hover:text-foreground/80 ${
-                isActive('/github') ? 'text-foreground' : 'text-foreground/60'
+                isActive("/github") ? "text-foreground" : "text-foreground/60"
               }`}
             >
               GitHub
