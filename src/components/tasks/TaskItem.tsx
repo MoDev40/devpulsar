@@ -5,6 +5,7 @@ import { Trash, Edit, Check, X } from 'lucide-react';
 import { CustomButton } from '@/components/ui/custom-button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useTaskStore } from '@/store/taskStore';
+import GitHubTaskItem from '@/components/github/GitHubTaskItem';
 
 interface TaskItemProps {
   task: Task;
@@ -125,6 +126,8 @@ const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
             {task.priority}
           </span>
         </div>
+        
+        {task.github_issue_url && <GitHubTaskItem task={task} />}
       </div>
       
       <div className="flex space-x-1">

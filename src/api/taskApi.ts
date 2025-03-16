@@ -38,7 +38,8 @@ export async function createTask(
   userId: string | undefined, 
   title: string, 
   category: TaskCategory, 
-  priority: TaskPriority
+  priority: TaskPriority,
+  github_issue_url?: string
 ) {
   if (!userId) {
     toast.error('Please log in to add tasks');
@@ -52,6 +53,7 @@ export async function createTask(
     category,
     priority,
     createdAt: new Date(),
+    github_issue_url
   };
   
   try {
@@ -63,6 +65,7 @@ export async function createTask(
       category: newTask.category,
       priority: newTask.priority,
       created_at: newTask.createdAt.toISOString(),
+      github_issue_url: newTask.github_issue_url
     });
 
     if (error) throw error;

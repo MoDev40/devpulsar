@@ -1,27 +1,32 @@
+import React, { useEffect } from 'react';
+import { RouterProvider } from 'react-router-dom';
+import { router } from './routes';
+import { Toaster } from 'sonner';
+import { ThemeProvider } from './components/theme/theme-provider';
+import useUser from './hooks/useUser';
+import { useTaskStore } from './store/taskStore';
+import GitHubHeaderButton from './components/navigation/Header';
 
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { useEffect } from "react";
-import { RouterProvider } from "react-router-dom";
-import { Toaster as Sonner } from "sonner";
-import { router } from "./routes";
-import { cleanupTimerStore } from "./store/timerStore";
+function App() {
+  const { user } = useUser();
+  const { subscribeToTasks, unsubscribeFromTasks } = useTaskStore();
 
-const App = () => {
-  // Cleanup timer when app unmounts
   useEffect(() => {
+    if (user) {
+      subscribeToTasks();
+    }
+
     return () => {
-      cleanupTimerStore();
+      unsubscribeFromTasks();
     };
-  }, []);
+  }, [user, subscribeToTasks, unsubscribeFromTasks]);
 
   return (
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <RouterProvider router={router} />
-    </TooltipProvider>
+      <Toaster position="top-right" richColors />
+    </ThemeProvider>
   );
-};
+}
 
 export default App;
