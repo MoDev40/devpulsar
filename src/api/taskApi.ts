@@ -24,6 +24,7 @@ export async function fetchTasks(userId: string | undefined) {
       category: task.category as TaskCategory,
       priority: task.priority as TaskPriority,
       createdAt: new Date(task.created_at),
+      github_issue_url: task.github_issue_url
     }));
 
     return transformedTasks;
