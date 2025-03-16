@@ -6,7 +6,6 @@ import { Toaster } from 'sonner';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import useUser from './hooks/useUser';
 import { useTaskStore } from './store/taskStore';
-import GitHubHeaderButton from './components/navigation/Header';
 
 function App() {
   const { user } = useUser();
