@@ -9,6 +9,72 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      github_connections: {
+        Row: {
+          access_token: string
+          created_at: string
+          github_username: string | null
+          id: string
+          refresh_token: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          github_username?: string | null
+          id?: string
+          refresh_token?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          github_username?: string | null
+          id?: string
+          refresh_token?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      github_repos: {
+        Row: {
+          created_at: string
+          id: string
+          repo_id: number
+          repo_name: string
+          repo_owner: string
+          track_issues: boolean
+          track_pull_requests: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          repo_id: number
+          repo_name: string
+          repo_owner: string
+          track_issues?: boolean
+          track_pull_requests?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          repo_id?: number
+          repo_name?: string
+          repo_owner?: string
+          track_issues?: boolean
+          track_pull_requests?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -35,6 +101,7 @@ export type Database = {
           category: string
           completed: boolean
           created_at: string
+          github_issue_url: string | null
           id: string
           priority: string
           title: string
@@ -44,6 +111,7 @@ export type Database = {
           category: string
           completed?: boolean
           created_at?: string
+          github_issue_url?: string | null
           id?: string
           priority: string
           title: string
@@ -53,6 +121,7 @@ export type Database = {
           category?: string
           completed?: boolean
           created_at?: string
+          github_issue_url?: string | null
           id?: string
           priority?: string
           title?: string
