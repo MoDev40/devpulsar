@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { useTaskContext } from '@/context/TaskContext';
+import { useTaskStore } from '@/store/taskStore';
 import TaskItem from '@/components/TaskItem';
 import { Input } from '@/components/ui/input';
 import { CustomButton } from '@/components/ui/custom-button';
@@ -8,7 +7,7 @@ import { Plus, Filter } from 'lucide-react';
 import { TaskCategory, TaskPriority } from '@/types';
 
 const TaskList: React.FC = () => {
-  const { tasks, addTask } = useTaskContext();
+  const { tasks, addTask } = useTaskStore();
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskCategory, setNewTaskCategory] = useState<TaskCategory>('feature');
   const [newTaskPriority, setNewTaskPriority] = useState<TaskPriority>('medium');

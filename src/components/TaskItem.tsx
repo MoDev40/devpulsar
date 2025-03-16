@@ -1,17 +1,16 @@
-
 import React, { useState } from 'react';
 import { Task } from '@/types';
 import { Trash, Edit, Check, ChevronUp, ChevronDown, X } from 'lucide-react';
 import { CustomButton } from '@/components/ui/custom-button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useTaskContext } from '@/context/TaskContext';
+import { useTaskStore } from '@/store/taskStore';
 
 interface TaskItemProps {
   task: Task;
 }
 
 const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
-  const { toggleTaskCompletion, deleteTask, editTask } = useTaskContext();
+  const { toggleTaskCompletion, deleteTask, editTask } = useTaskStore();
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(task.title);
   const [editedCategory, setEditedCategory] = useState(task.category);
