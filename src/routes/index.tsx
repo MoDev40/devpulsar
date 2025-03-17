@@ -27,8 +27,4 @@ export const router = createBrowserRouter([
     path: "/auth",
     element: <Auth />,
   },
-  {
-    path: "/github-callback",
-    element: <Auth />,
-  },
 ]);
