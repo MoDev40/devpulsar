@@ -11,13 +11,6 @@ function App() {
   const { user } = useUser();
   const { subscribeToTasks, unsubscribeFromTasks, loadTasks } = useTaskStore();
 
-  // Log environment variables for debugging (in development only)
-  useEffect(() => {
-    if (import.meta.env.DEV) {
-      console.log("GitHub Client ID:", import.meta.env.VITE_GITHUB_CLIENT_ID || "Not set");
-    }
-  }, []);
-
   useEffect(() => {
     if (user) {
       subscribeToTasks();
