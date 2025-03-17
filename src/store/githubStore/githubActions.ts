@@ -1,4 +1,3 @@
-
 import { toast } from 'sonner';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from '@/store/authStore';
@@ -49,17 +48,25 @@ export const createGitHubActions = (
         
         // Generate the GitHub OAuth URL
         const githubClientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
+        
+        // Verify that the client ID is defined
+        if (!githubClientId) {
+          throw new Error("GitHub Client ID is not defined in environment variables");
+        }
+        
         const redirectUri = `${window.location.origin}/github-callback`;
         const scope = 'repo';
         
         const githubUrl = `https://github.com/login/oauth/authorize?client_id=${githubClientId}&redirect_uri=${redirectUri}&scope=${scope}&state=${state}`;
+        
+        console.log("GitHub OAuth URL:", githubUrl); // For debugging
         
         // Redirect to GitHub for authorization
         window.location.href = githubUrl;
       } catch (error: any) {
         console.error('GitHub connect error:', error);
         set({ error: error.message, loading: false });
-        toast.error("Failed to connect to GitHub");
+        toast.error(error.message || "Failed to connect to GitHub");
       }
     },
     
