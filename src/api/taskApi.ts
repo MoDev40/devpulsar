@@ -1,7 +1,11 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Task, TaskCategory, TaskPriority } from '@/types';
-import { toast } from 'sonner';
+import { toast as sonnerToast } from 'sonner';
+import { toast as shadcnToast } from '@/hooks/use-toast';
+
+// Check if this is a first visit
+const isFirstVisit = localStorage.getItem('has-visited') !== 'true';
+const toast = isFirstVisit ? shadcnToast : sonnerToast;
 
 export async function fetchTasks(userId: string | undefined) {
   if (!userId) {
@@ -30,7 +34,15 @@ export async function fetchTasks(userId: string | undefined) {
     return transformedTasks;
   } catch (error) {
     console.error('Error fetching tasks:', error);
-    toast.error('Failed to load your tasks');
+    if (isFirstVisit) {
+      shadcnToast({
+        title: "Error",
+        description: "Failed to load your tasks",
+        variant: "destructive",
+      });
+    } else {
+      sonnerToast.error('Failed to load your tasks');
+    }
     return [];
   }
 }
@@ -43,7 +55,15 @@ export async function createTask(
   github_issue_url?: string
 ) {
   if (!userId) {
-    toast.error('Please log in to add tasks');
+    if (isFirstVisit) {
+      shadcnToast({
+        title: "Error",
+        description: "Please log in to add tasks",
+        variant: "destructive",
+      });
+    } else {
+      sonnerToast.error('Please log in to add tasks');
+    }
     return null;
   }
 
@@ -70,11 +90,30 @@ export async function createTask(
     });
 
     if (error) throw error;
-    toast.success('Task added successfully');
+    
+    if (isFirstVisit) {
+      shadcnToast({
+        title: "Success",
+        description: "Task added successfully",
+      });
+    } else {
+      sonnerToast.success('Task added successfully');
+    }
+    
     return newTask;
   } catch (error) {
     console.error('Error adding task:', error);
-    toast.error('Failed to save your task');
+    
+    if (isFirstVisit) {
+      shadcnToast({
+        title: "Error",
+        description: "Failed to save your task",
+        variant: "destructive",
+      });
+    } else {
+      sonnerToast.error('Failed to save your task');
+    }
+    
     return null;
   }
 }
@@ -90,7 +129,17 @@ export async function updateTaskCompletion(id: string, isCompleted: boolean) {
     return true;
   } catch (error) {
     console.error('Error updating task completion:', error);
-    toast.error('Failed to update task');
+    
+    if (isFirstVisit) {
+      shadcnToast({
+        title: "Error",
+        description: "Failed to update task",
+        variant: "destructive",
+      });
+    } else {
+      sonnerToast.error('Failed to update task');
+    }
+    
     return false;
   }
 }
@@ -103,11 +152,30 @@ export async function removeTask(id: string) {
       .eq('id', id);
 
     if (error) throw error;
-    toast.success('Task deleted');
+    
+    if (isFirstVisit) {
+      shadcnToast({
+        title: "Success",
+        description: "Task deleted",
+      });
+    } else {
+      sonnerToast.success('Task deleted');
+    }
+    
     return true;
   } catch (error) {
     console.error('Error deleting task:', error);
-    toast.error('Failed to delete task');
+    
+    if (isFirstVisit) {
+      shadcnToast({
+        title: "Error",
+        description: "Failed to delete task",
+        variant: "destructive",
+      });
+    } else {
+      sonnerToast.error('Failed to delete task');
+    }
+    
     return false;
   }
 }
@@ -120,11 +188,30 @@ export async function updateTask(id: string, updates: Partial<Omit<Task, 'id' | 
       .eq('id', id);
 
     if (error) throw error;
-    toast.success('Task updated');
+    
+    if (isFirstVisit) {
+      shadcnToast({
+        title: "Success",
+        description: "Task updated",
+      });
+    } else {
+      sonnerToast.success('Task updated');
+    }
+    
     return true;
   } catch (error) {
     console.error('Error updating task:', error);
-    toast.error('Failed to update task');
+    
+    if (isFirstVisit) {
+      shadcnToast({
+        title: "Error",
+        description: "Failed to update task",
+        variant: "destructive",
+      });
+    } else {
+      sonnerToast.error('Failed to update task');
+    }
+    
     return false;
   }
 }
@@ -146,6 +233,7 @@ export async function fetchTaskById(id: string) {
       category: data.category as TaskCategory,
       priority: data.priority as TaskPriority,
       createdAt: new Date(data.created_at),
+      github_issue_url: data.github_issue_url
     } : null;
   } catch (error) {
     console.error('Error fetching task:', error);
