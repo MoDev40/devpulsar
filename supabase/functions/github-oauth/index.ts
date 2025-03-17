@@ -1,4 +1,3 @@
-
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
@@ -8,17 +7,31 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Log the request for debugging
+  console.log(`Received ${req.method} request to github-oauth function:`, req.url);
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { code, action } = await req.json();
+    const requestBody = await req.json();
+    console.log("Request body:", requestBody);
+    const { code, action } = requestBody;
+    
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
     const githubClientId = Deno.env.get('GITHUB_CLIENT_ID') || '';
     const githubClientSecret = Deno.env.get('GITHUB_CLIENT_SECRET') || '';
+    
+    // Log environment variables (without sensitive values)
+    console.log("Environment variables check:", {
+      hasSupabaseUrl: !!supabaseUrl,
+      hasSupabaseServiceKey: !!supabaseServiceKey,
+      hasGithubClientId: !!githubClientId,
+      hasGithubClientSecret: !!githubClientSecret,
+    });
     
     if (!supabaseUrl || !supabaseServiceKey || !githubClientId || !githubClientSecret) {
       console.error('Missing environment variables');
@@ -52,6 +65,8 @@ serve(async (req) => {
     }
 
     if (action === 'exchange') {
+      console.log(`Exchanging GitHub code for token: ${code.substring(0, 5)}...`);
+      
       // Exchange the GitHub code for an access token
       const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
         method: 'POST',
@@ -67,6 +82,11 @@ serve(async (req) => {
       });
 
       const tokenData = await tokenResponse.json();
+      console.log("GitHub token exchange response:", {
+        success: !tokenData.error,
+        error: tokenData.error,
+        error_description: tokenData.error_description,
+      });
       
       if (tokenData.error) {
         console.error('GitHub token exchange error:', tokenData.error);
@@ -87,6 +107,7 @@ serve(async (req) => {
       });
       
       const githubUser = await userResponse.json();
+      console.log("GitHub user info:", { login: githubUser.login, id: githubUser.id });
       
       // Store or update the GitHub connection in our database
       const { data: connectionData, error: connectionError } = await supabase
@@ -265,3 +286,4 @@ serve(async (req) => {
     );
   }
 });
+

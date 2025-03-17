@@ -12,6 +12,14 @@ function App() {
   const { subscribeToTasks, unsubscribeFromTasks, loadTasks } = useTaskStore();
 
   useEffect(() => {
+    // Log environment variables for debugging
+    console.log("Environment variables in App:", {
+      NODE_ENV: import.meta.env.MODE,
+      VITE_GITHUB_CLIENT_ID: import.meta.env.VITE_GITHUB_CLIENT_ID,
+      BASE_URL: import.meta.env.BASE_URL,
+      PUBLIC_URL: window.location.origin,
+    });
+    
     if (user) {
       subscribeToTasks();
     }

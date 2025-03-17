@@ -47,12 +47,32 @@ export const createGitHubActions = (
         const state = Math.random().toString(36).substring(2, 15);
         localStorage.setItem('github_oauth_state', state);
         
-        // Generate the GitHub OAuth URL
+        // Get GitHub client ID from environment variables
         const githubClientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
+        
+        // Log environment variables for debugging
+        console.log("GitHub OAuth Configuration:", { 
+          githubClientId, 
+          envKeys: Object.keys(import.meta.env),
+          origin: window.location.origin,
+        });
+        
+        // Check if GitHub client ID is available
+        if (!githubClientId) {
+          console.error("GitHub client ID is not defined in environment variables");
+          set({ error: "GitHub client ID is not configured", loading: false });
+          toast.error("GitHub integration is not properly configured");
+          return;
+        }
+        
+        // Use a fixed callback path instead of a dynamic one
         const redirectUri = `${window.location.origin}/github-callback`;
         const scope = 'repo';
         
-        const githubUrl = `https://github.com/login/oauth/authorize?client_id=${githubClientId}&redirect_uri=${redirectUri}&scope=${scope}&state=${state}`;
+        // Generate GitHub OAuth URL with proper URL encoding
+        const githubUrl = `https://github.com/login/oauth/authorize?client_id=${encodeURIComponent(githubClientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}&state=${encodeURIComponent(state)}`;
+        
+        console.log("Redirecting to GitHub OAuth URL:", githubUrl);
         
         // Redirect to GitHub for authorization
         window.location.href = githubUrl;

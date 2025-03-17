@@ -17,10 +17,14 @@ const GitHubConnect: React.FC = () => {
     if (code && state) {
       // Verify state to prevent CSRF attacks
       const savedState = localStorage.getItem("github_oauth_state");
+      
+      console.log("GitHub callback detected:", { code, state, savedState });
 
       if (state === savedState) {
         // Exchange the code for an access token
         handleGitHubCallback(code);
+      } else {
+        console.error("State mismatch in GitHub callback", { state, savedState });
       }
 
       // Clear URL parameters
@@ -30,12 +34,17 @@ const GitHubConnect: React.FC = () => {
 
   const handleGitHubCallback = async (code: string) => {
     try {
+      console.log("Exchanging GitHub code for token");
       const { data, error } = await supabase.functions.invoke("github-oauth", {
         body: { code, action: "exchange" },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("GitHub callback error:", error);
+        throw error;
+      }
 
+      console.log("GitHub token exchange successful:", data);
       // Refresh the page to update the GitHub connection state
       window.location.reload();
     } catch (error) {
