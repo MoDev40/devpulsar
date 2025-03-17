@@ -55,18 +55,19 @@ export const createGitHubActions = (
           githubClientId, 
           envKeys: Object.keys(import.meta.env),
           origin: window.location.origin,
+          pathname: window.location.pathname
         });
         
         // Check if GitHub client ID is available
         if (!githubClientId) {
           console.error("GitHub client ID is not defined in environment variables");
           set({ error: "GitHub client ID is not configured", loading: false });
-          toast.error("GitHub integration is not properly configured");
+          toast.error("GitHub integration is not properly configured. Please check your environment variables.");
           return;
         }
         
-        // Use a fixed callback path instead of a dynamic one
-        const redirectUri = `${window.location.origin}/github-callback`;
+        // Build the current path to ensure we redirect back to the GitHub page
+        const redirectUri = `${window.location.origin}/github`;
         const scope = 'repo';
         
         // Generate GitHub OAuth URL with proper URL encoding

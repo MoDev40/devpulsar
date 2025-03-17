@@ -36,7 +36,12 @@ serve(async (req) => {
     if (!supabaseUrl || !supabaseServiceKey || !githubClientId || !githubClientSecret) {
       console.error('Missing environment variables');
       return new Response(
-        JSON.stringify({ error: 'Server configuration error' }),
+        JSON.stringify({ error: 'Server configuration error', missing: {
+          supabaseUrl: !supabaseUrl,
+          supabaseServiceKey: !supabaseServiceKey,
+          githubClientId: !githubClientId,
+          githubClientSecret: !githubClientSecret
+        }}),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
       );
     }
@@ -59,7 +64,7 @@ serve(async (req) => {
     if (userError || !user) {
       console.error('Error getting user:', userError);
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ error: 'Unauthorized', details: userError }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
       );
     }
@@ -126,7 +131,7 @@ serve(async (req) => {
       if (connectionError) {
         console.error('Error storing GitHub connection:', connectionError);
         return new Response(
-          JSON.stringify({ error: 'Failed to store GitHub connection' }),
+          JSON.stringify({ error: 'Failed to store GitHub connection', details: connectionError }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
         );
       }
@@ -281,9 +286,8 @@ serve(async (req) => {
   } catch (error) {
     console.error('Server error:', error);
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ error: 'Internal server error', details: String(error) }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
 });
-

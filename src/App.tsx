@@ -15,9 +15,10 @@ function App() {
     // Log environment variables for debugging
     console.log("Environment variables in App:", {
       NODE_ENV: import.meta.env.MODE,
-      VITE_GITHUB_CLIENT_ID: import.meta.env.VITE_GITHUB_CLIENT_ID,
+      VITE_GITHUB_CLIENT_ID: import.meta.env.VITE_GITHUB_CLIENT_ID || "not set",
       BASE_URL: import.meta.env.BASE_URL,
       PUBLIC_URL: window.location.origin,
+      FULL_PATH: window.location.href
     });
     
     if (user) {
