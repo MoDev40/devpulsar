@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/store/authStore";
@@ -51,6 +52,8 @@ export const createGitHubActions = (
 
         // Generate a random state value for security
         const state = Math.random().toString(36).substring(2, 15);
+        
+        // Clear any previous state before setting a new one
         localStorage.removeItem("github_oauth_state");
         localStorage.setItem("github_oauth_state", state);
 
@@ -69,9 +72,16 @@ export const createGitHubActions = (
           return;
         }
 
-        // Build the current path to ensure we redirect back to the GitHub page
-        const redirectUri = import.meta.env.VITE_GITHUB_REDIRECT_URI;
+        // Use the configured redirect URI, or default to current origin
+        const redirectUri = import.meta.env.VITE_GITHUB_REDIRECT_URI || `${window.location.origin}/github`;
         const scope = "repo";
+
+        console.log("OAuth configuration:", {
+          clientId: githubClientId,
+          redirectUri,
+          state,
+          currentPath: window.location.pathname,
+        });
 
         // Generate GitHub OAuth URL with proper URL encoding
         const githubUrl = `https://github.com/login/oauth/authorize?client_id=${encodeURIComponent(

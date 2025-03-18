@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useGitHubStore } from "@/store/githubStore";
 import { CustomButton } from "@/components/ui/custom-button";
@@ -14,22 +15,39 @@ const GitHubConnect: React.FC = () => {
     const url = new URL(window.location.href);
     const code = url.searchParams.get("code");
     const state = url.searchParams.get("state");
+    const error = url.searchParams.get("error");
+    const errorDescription = url.searchParams.get("error_description");
+
+    if (error) {
+      console.error("GitHub OAuth error:", error, errorDescription);
+      toast.error(`GitHub OAuth error: ${errorDescription || error}`);
+      // Clear URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return;
+    }
 
     if (code && state) {
       // Verify state to prevent CSRF attacks
       const savedState = localStorage.getItem("github_oauth_state");
 
-      console.log("GitHub callback detected:", { code, state, savedState });
+      console.log("GitHub callback detected:", { 
+        code: code.substring(0, 5) + "...", 
+        state, 
+        savedState,
+        currentPath: window.location.pathname
+      });
 
-      // Set a loading flag or something similar
+      // Set a loading flag
       setCallbackProcessing(true);
 
-      if (savedState === null) {
+      if (!savedState) {
         console.error(
-          "State was not saved in localStorage. Possible issue with initial OAuth flow."
+          "State was not saved in localStorage. Possible issue with initial OAuth flow or localStorage access."
         );
-        toast.error("Error: State not saved. Please try again.");
+        toast.error("Error: Authentication state not found. Please try again.");
         setCallbackProcessing(false);
+        // Clear URL parameters
+        window.history.replaceState({}, document.title, window.location.pathname);
         return;
       }
 
@@ -38,15 +56,16 @@ const GitHubConnect: React.FC = () => {
         handleGitHubCallback(code);
       } else {
         console.error("State mismatch in GitHub callback", {
-          state,
+          receivedState: state,
           savedState,
         });
         toast.error("Invalid authentication state. Please try again.");
         setCallbackProcessing(false);
       }
 
-      // Clear URL parameters (to prevent re-triggering)
+      // Clear URL parameters and state from localStorage
       window.history.replaceState({}, document.title, window.location.pathname);
+      localStorage.removeItem("github_oauth_state");
     }
   }, []); // Dependency array left empty to only run once on component mount
 
@@ -73,9 +92,9 @@ const GitHubConnect: React.FC = () => {
       // Show success message
       toast.success("GitHub account connected successfully!");
 
-      // Optionally, update state or perform any necessary UI updates here
-      // This avoids a full page reload
-    } catch (error) {
+      // Update the GitHub connection state
+      connectGitHub();
+    } catch (error: any) {
       // Handle any unexpected errors here
       console.error("Unexpected GitHub callback error:", error);
       toast.error("Failed to connect GitHub account. Please try again.");

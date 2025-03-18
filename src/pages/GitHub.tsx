@@ -5,10 +5,23 @@ import GitHubConnect from '@/components/github/GitHubConnect';
 import GitHubRepositoryList from '@/components/github/GitHubRepositoryList';
 import GitHubIssueList from '@/components/github/GitHubIssueList';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useLocation } from 'react-router-dom';
 
 const GitHub: React.FC = () => {
   const { isConnected, selectedRepository } = useGitHubStore();
   const [activeTab, setActiveTab] = useState('repositories');
+  const location = useLocation();
+  
+  // Process OAuth redirect if necessary
+  useEffect(() => {
+    // If we have code and state in the URL, it means we're in an OAuth callback
+    const searchParams = new URLSearchParams(location.search);
+    const hasOAuthParams = searchParams.has('code') && searchParams.has('state');
+    
+    if (hasOAuthParams) {
+      console.log("OAuth parameters detected in GitHub page");
+    }
+  }, [location]);
   
   useEffect(() => {
     if (selectedRepository) {

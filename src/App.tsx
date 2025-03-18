@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { RouterProvider } from "react-router-dom";
 import { router } from "./routes";
@@ -18,7 +19,19 @@ function App() {
       VITE_GITHUB_REDIRECT_URI:
         import.meta.env.VITE_GITHUB_REDIRECT_URI || "not set",
       BASE_URL: import.meta.env.BASE_URL,
+      AUTH_STATE: localStorage.getItem("github_oauth_state") || "no state found",
+      FULL_URL: window.location.href,
+      SEARCH_PARAMS: window.location.search
     });
+
+    // Check if we're handling a GitHub OAuth callback with errors
+    const url = new URL(window.location.href);
+    const error = url.searchParams.get("error");
+    const errorDescription = url.searchParams.get("error_description");
+    
+    if (error && errorDescription && errorDescription.includes("OAuth")) {
+      console.error("GitHub OAuth error in App.tsx:", error, errorDescription);
+    }
 
     if (user) {
       subscribeToTasks();

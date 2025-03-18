@@ -9,6 +9,54 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          criteria: Json
+          description: string
+          icon_name: string
+          id: number
+          name: string
+        }
+        Insert: {
+          criteria: Json
+          description: string
+          icon_name: string
+          id?: number
+          name: string
+        }
+        Update: {
+          criteria?: Json
+          description?: string
+          icon_name?: string
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
+      badges: {
+        Row: {
+          criteria: Json
+          description: string
+          icon_name: string
+          id: number
+          name: string
+        }
+        Insert: {
+          criteria: Json
+          description: string
+          icon_name: string
+          id?: number
+          name: string
+        }
+        Update: {
+          criteria?: Json
+          description?: string
+          icon_name?: string
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
       github_connections: {
         Row: {
           access_token: string
@@ -80,21 +128,71 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          quizzes_completed: number | null
+          total_points: number | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           email: string
           id: string
+          quizzes_completed?: number | null
+          total_points?: number | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           email?: string
           id?: string
+          quizzes_completed?: number | null
+          total_points?: number | null
           updated_at?: string
         }
         Relationships: []
+      }
+      quiz_attempts: {
+        Row: {
+          category_id: number | null
+          category_name: string | null
+          completed_at: string | null
+          difficulty: string | null
+          id: string
+          max_score: number
+          score: number
+          time_taken: number | null
+          user_id: string
+        }
+        Insert: {
+          category_id?: number | null
+          category_name?: string | null
+          completed_at?: string | null
+          difficulty?: string | null
+          id?: string
+          max_score: number
+          score: number
+          time_taken?: number | null
+          user_id: string
+        }
+        Update: {
+          category_id?: number | null
+          category_name?: string | null
+          completed_at?: string | null
+          difficulty?: string | null
+          id?: string
+          max_score?: number
+          score?: number
+          time_taken?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tasks: {
         Row: {
@@ -128,6 +226,78 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_achievements: {
+        Row: {
+          achievement_id: number
+          earned_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          achievement_id: number
+          earned_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          achievement_id?: number
+          earned_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_achievements_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_badges: {
+        Row: {
+          badge_id: number
+          earned_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_id: number
+          earned_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: number
+          earned_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_badges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
