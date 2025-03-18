@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/store/authStore";
@@ -72,8 +71,8 @@ export const createGitHubActions = (
           return;
         }
 
-        // Use the configured redirect URI, or default to current origin
-        const redirectUri = import.meta.env.VITE_GITHUB_REDIRECT_URI || `${window.location.origin}/github`;
+        // Use the current origin + /github as the redirect URI
+        const redirectUri = `${window.location.origin}/github`;
         const scope = "repo";
 
         console.log("OAuth configuration:", {
@@ -100,6 +99,68 @@ export const createGitHubActions = (
         console.error("GitHub connect error:", error);
         set({ error: error.message, loading: false });
         toast.error("Failed to connect to GitHub");
+      }
+    },
+
+    handleGitHubCallback: async (code: string) => {
+      const { user } = useAuthStore.getState();
+
+      if (!user) {
+        toast.error("You must be logged in to connect GitHub");
+        throw new Error("User not authenticated");
+      }
+
+      set({ loading: true, error: null });
+
+      try {
+        console.log("Exchanging GitHub code for token");
+
+        // Call the Supabase function to exchange code for token
+        const { data, error } = await supabase.functions.invoke("github-oauth", {
+          body: { code, action: "exchange" },
+        });
+
+        if (error) {
+          console.error("GitHub callback error:", error);
+          set({ error: error.message || "Exchange error", loading: false });
+          toast.error(
+            `Failed to connect GitHub account: ${error.message || error}`
+          );
+          throw error;
+        }
+
+        if (!data || !data.github_username) {
+          throw new Error("Invalid response from GitHub OAuth exchange");
+        }
+
+        console.log("GitHub token exchange successful", data);
+
+        // Update the GitHub connection state
+        set({
+          isConnected: true,
+          connection: {
+            id: data.connection_id,
+            github_username: data.github_username,
+            created_at: new Date(),
+            updated_at: new Date(),
+          },
+          loading: false,
+        });
+
+        // Show success message
+        toast.success("GitHub account connected successfully!");
+        
+        // Fetch repositories after successful connection
+        setTimeout(() => {
+          get().fetchRepositories();
+        }, 500);
+
+        return data;
+      } catch (error: any) {
+        console.error("GitHub callback error:", error);
+        set({ error: error.message, loading: false });
+        toast.error("Failed to connect GitHub account: " + error.message);
+        throw error;
       }
     },
 

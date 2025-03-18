@@ -15,6 +15,7 @@ export interface GitHubState {
 export interface GitHubStore extends GitHubState {
   // Actions
   connectGitHub: () => Promise<void>;
+  handleGitHubCallback: (code: string) => Promise<any>;
   fetchRepositories: () => Promise<void>;
   fetchTrackedRepositories: () => Promise<void>;
   trackRepository: (repository: GitHubRepository, trackIssues: boolean, trackPullRequests: boolean) => Promise<void>;

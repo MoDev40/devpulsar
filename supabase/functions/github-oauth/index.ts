@@ -82,7 +82,7 @@ serve(async (req) => {
         body: JSON.stringify({
           client_id: githubClientId,
           client_secret: githubClientSecret,
-          code: code
+          code
         })
       });
 
@@ -94,14 +94,25 @@ serve(async (req) => {
       });
       
       if (tokenData.error) {
-        console.error('GitHub token exchange error:', tokenData.error);
+        console.error('GitHub token exchange error:', tokenData.error, tokenData.error_description);
         return new Response(
-          JSON.stringify({ error: tokenData.error_description || 'Failed to exchange GitHub code' }),
+          JSON.stringify({ 
+            error: tokenData.error_description || 'Failed to exchange GitHub code',
+            details: tokenData
+          }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
         );
       }
 
       const { access_token, refresh_token } = tokenData;
+      
+      if (!access_token) {
+        console.error('No access token received from GitHub');
+        return new Response(
+          JSON.stringify({ error: 'No access token received from GitHub' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        );
+      }
       
       // Get GitHub user info
       const userResponse = await fetch('https://api.github.com/user', {
@@ -113,6 +124,14 @@ serve(async (req) => {
       
       const githubUser = await userResponse.json();
       console.log("GitHub user info:", { login: githubUser.login, id: githubUser.id });
+      
+      if (!githubUser.login) {
+        console.error('Invalid GitHub user response:', githubUser);
+        return new Response(
+          JSON.stringify({ error: 'Failed to get GitHub user info', details: githubUser }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        );
+      }
       
       // Store or update the GitHub connection in our database
       const { data: connectionData, error: connectionError } = await supabase
