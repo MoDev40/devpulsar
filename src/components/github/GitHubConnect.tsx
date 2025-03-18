@@ -12,7 +12,10 @@ const GitHubConnect: React.FC = () => {
     const state = Math.random().toString(36).substring(2, 15);
     localStorage.setItem("github_oauth_state", state);
     
-    connectGitHub(state);
+    // Get the current URL base to use for redirect
+    const redirectUri = `${window.location.origin}/github`;
+    
+    connectGitHub(state, redirectUri);
   };
 
   if (isConnected && connection) {

@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/store/authStore";
@@ -17,7 +18,7 @@ export const createGitHubActions = (
   get: () => GitHubStore
 ) => {
   return {
-    connectGitHub: async (state: string) => {
+    connectGitHub: async (state: string, redirectUri: string) => {
       const { user } = useAuthStore.getState();
 
       if (!user) {
@@ -64,8 +65,7 @@ export const createGitHubActions = (
           return;
         }
 
-        // Use the current origin + /github as the redirect URI
-        const redirectUri = `${window.location.origin}/github`;
+        // Use the provided redirectUri
         const scope = "repo";
 
         console.log("OAuth configuration:", {
