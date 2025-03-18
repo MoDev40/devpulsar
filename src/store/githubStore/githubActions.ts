@@ -17,7 +17,7 @@ export const createGitHubActions = (
   get: () => GitHubStore
 ) => {
   return {
-    connectGitHub: async () => {
+    connectGitHub: async (state: string) => {
       const { user } = useAuthStore.getState();
 
       if (!user) {
@@ -48,14 +48,7 @@ export const createGitHubActions = (
           });
           return;
         }
-
-        // Generate a random state value for security
-        const state = Math.random().toString(36).substring(2, 15);
         
-        // Clear any previous state before setting a new one
-        localStorage.removeItem("github_oauth_state");
-        localStorage.setItem("github_oauth_state", state);
-
         // Get GitHub client ID from environment variables
         const githubClientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
 
@@ -82,7 +75,7 @@ export const createGitHubActions = (
           currentPath: window.location.pathname,
         });
 
-        // Generate GitHub OAuth URL with proper URL encoding
+        // Generate GitHub OAuth URL with proper URL encoding and the provided state parameter
         const githubUrl = `https://github.com/login/oauth/authorize?client_id=${encodeURIComponent(
           githubClientId
         )}&redirect_uri=${encodeURIComponent(

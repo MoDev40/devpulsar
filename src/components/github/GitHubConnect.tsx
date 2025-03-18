@@ -7,6 +7,14 @@ import { Github } from "lucide-react";
 const GitHubConnect: React.FC = () => {
   const { isConnected, connection, loading, connectGitHub, disconnectGitHub } = useGitHubStore();
 
+  const handleConnect = () => {
+    // Generate a new state parameter for this connection attempt
+    const state = Math.random().toString(36).substring(2, 15);
+    localStorage.setItem("github_oauth_state", state);
+    
+    connectGitHub(state);
+  };
+
   if (isConnected && connection) {
     return (
       <div className="flex flex-col sm:flex-row sm:items-center gap-2 p-4 bg-secondary/20 rounded-lg">
@@ -37,7 +45,7 @@ const GitHubConnect: React.FC = () => {
         Link your GitHub account to track issues and pull requests
       </p>
       <CustomButton
-        onClick={connectGitHub}
+        onClick={handleConnect}
         disabled={loading}
         className="gap-2"
       >

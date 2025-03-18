@@ -28,6 +28,7 @@ const GitHub: React.FC = () => {
       toast.error(`GitHub OAuth error: ${errorDescription || error}`);
       // Clear URL parameters
       window.history.replaceState({}, document.title, window.location.pathname);
+      localStorage.removeItem("github_oauth_state");
       return;
     }
     
@@ -37,10 +38,19 @@ const GitHub: React.FC = () => {
       
       // Verify state to prevent CSRF attacks
       const savedState = localStorage.getItem("github_oauth_state");
+      console.log("State validation:", { receivedState: state, savedState });
       
       if (state === savedState) {
         // Pass the code to our GitHub store handler
         handleGitHubCallback(code)
+          .then(() => {
+            console.log("GitHub callback processed successfully");
+            toast.success("GitHub account connected successfully!");
+          })
+          .catch((error) => {
+            console.error("Error processing GitHub callback:", error);
+            toast.error(`Failed to connect GitHub account: ${error.message || error}`);
+          })
           .finally(() => {
             setProcessingOAuth(false);
             // Clear URL parameters
