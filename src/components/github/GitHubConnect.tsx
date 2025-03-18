@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useGitHubStore } from "@/store/githubStore";
 import { CustomButton } from "@/components/ui/custom-button";
@@ -19,47 +18,69 @@ const GitHubConnect: React.FC = () => {
     if (code && state) {
       // Verify state to prevent CSRF attacks
       const savedState = localStorage.getItem("github_oauth_state");
-      
+
       console.log("GitHub callback detected:", { code, state, savedState });
+
+      // Set a loading flag or something similar
       setCallbackProcessing(true);
+
+      if (savedState === null) {
+        console.error(
+          "State was not saved in localStorage. Possible issue with initial OAuth flow."
+        );
+        toast.error("Error: State not saved. Please try again.");
+        setCallbackProcessing(false);
+        return;
+      }
 
       if (state === savedState) {
         // Exchange the code for an access token
         handleGitHubCallback(code);
       } else {
-        console.error("State mismatch in GitHub callback", { state, savedState });
+        console.error("State mismatch in GitHub callback", {
+          state,
+          savedState,
+        });
         toast.error("Invalid authentication state. Please try again.");
         setCallbackProcessing(false);
       }
 
-      // Clear URL parameters
+      // Clear URL parameters (to prevent re-triggering)
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-  }, []);
+  }, []); // Dependency array left empty to only run once on component mount
 
   const handleGitHubCallback = async (code: string) => {
     try {
       console.log("Exchanging GitHub code for token");
+
+      // Call the Supabase function to exchange code for token
       const { data, error } = await supabase.functions.invoke("github-oauth", {
         body: { code, action: "exchange" },
       });
 
       if (error) {
+        // If there's an error in the Supabase function, log it and show an error toast
         console.error("GitHub callback error:", error);
-        toast.error("Failed to connect GitHub account. Please try again.");
-        throw error;
+        toast.error(
+          `Failed to connect GitHub account: ${error.message || error}`
+        );
+        throw new Error(error.message || "Unknown error");
       }
 
       console.log("GitHub token exchange successful:", data);
+
+      // Show success message
       toast.success("GitHub account connected successfully!");
-      
-      // Refresh the page to update the GitHub connection state
-      window.location.reload();
+
+      // Optionally, update state or perform any necessary UI updates here
+      // This avoids a full page reload
     } catch (error) {
-      console.error("GitHub callback error:", error);
+      // Handle any unexpected errors here
+      console.error("Unexpected GitHub callback error:", error);
       toast.error("Failed to connect GitHub account. Please try again.");
     } finally {
-      setCallbackProcessing(false);
+      setCallbackProcessing(false); // Stop loading indicator
     }
   };
 
@@ -86,7 +107,9 @@ const GitHubConnect: React.FC = () => {
         className="gap-2"
       >
         <Github className="h-4 w-4" />
-        {loading || callbackProcessing ? "Connecting..." : "Connect GitHub Account"}
+        {loading || callbackProcessing
+          ? "Connecting..."
+          : "Connect GitHub Account"}
       </CustomButton>
     </div>
   );

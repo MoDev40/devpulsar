@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { RouterProvider } from "react-router-dom";
 import { router } from "./routes";
@@ -16,11 +15,11 @@ function App() {
     console.log("Environment variables in App:", {
       NODE_ENV: import.meta.env.MODE,
       VITE_GITHUB_CLIENT_ID: import.meta.env.VITE_GITHUB_CLIENT_ID || "not set",
+      VITE_GITHUB_REDIRECT_URI:
+        import.meta.env.VITE_GITHUB_REDIRECT_URI || "not set",
       BASE_URL: import.meta.env.BASE_URL,
-      PUBLIC_URL: window.location.origin,
-      FULL_PATH: window.location.href
     });
-    
+
     if (user) {
       subscribeToTasks();
     }
