@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/store/authStore";
@@ -29,7 +28,6 @@ export const createGitHubActions = (
       set({ loading: true, error: null });
 
       try {
-        // First check if the user already has a GitHub connection
         const { data: existingConnection } = await supabase
           .from("github_connections")
           .select("id, github_username, created_at, updated_at")
@@ -50,10 +48,8 @@ export const createGitHubActions = (
           return;
         }
         
-        // Get GitHub client ID from environment variables
         const githubClientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
 
-        // Check if GitHub client ID is available
         if (!githubClientId) {
           console.error(
             "GitHub client ID is not defined in environment variables"
@@ -65,7 +61,6 @@ export const createGitHubActions = (
           return;
         }
 
-        // Use the provided redirectUri
         const scope = "repo";
 
         console.log("OAuth configuration:", {
@@ -75,7 +70,6 @@ export const createGitHubActions = (
           currentPath: window.location.pathname,
         });
 
-        // Generate GitHub OAuth URL with proper URL encoding and the provided state parameter
         const githubUrl = `https://github.com/login/oauth/authorize?client_id=${encodeURIComponent(
           githubClientId
         )}&redirect_uri=${encodeURIComponent(
@@ -86,7 +80,6 @@ export const createGitHubActions = (
 
         console.log("Redirecting to GitHub OAuth URL:", githubUrl);
 
-        // Redirect to GitHub for authorization
         window.location.href = githubUrl;
       } catch (error: any) {
         console.error("GitHub connect error:", error);
@@ -107,10 +100,16 @@ export const createGitHubActions = (
 
       try {
         console.log("Exchanging GitHub code for token");
+        
+        const redirectUri = `${window.location.origin}/github`;
+        console.log("Using redirect URI for token exchange:", redirectUri);
 
-        // Call the Supabase function to exchange code for token
         const { data, error } = await supabase.functions.invoke("github-oauth", {
-          body: { code, action: "exchange" },
+          body: { 
+            code, 
+            action: "exchange",
+            redirectUri: redirectUri
+          },
         });
 
         if (error) {
@@ -128,7 +127,6 @@ export const createGitHubActions = (
 
         console.log("GitHub token exchange successful", data);
 
-        // Update the GitHub connection state
         set({
           isConnected: true,
           connection: {
@@ -140,10 +138,8 @@ export const createGitHubActions = (
           loading: false,
         });
 
-        // Show success message
         toast.success("GitHub account connected successfully!");
         
-        // Fetch repositories after successful connection
         setTimeout(() => {
           get().fetchRepositories();
         }, 500);
@@ -168,7 +164,6 @@ export const createGitHubActions = (
       set({ loading: true, error: null });
 
       try {
-        // Call our Supabase Edge Function to fetch the repositories
         const { data, error } = await supabase.functions.invoke(
           "github-oauth",
           {
@@ -237,7 +232,6 @@ export const createGitHubActions = (
       set({ loading: true, error: null });
 
       try {
-        // Call our Supabase Edge Function to track the repository
         const { data, error } = await supabase.functions.invoke(
           "github-oauth",
           {
@@ -254,7 +248,6 @@ export const createGitHubActions = (
 
         if (error) throw error;
 
-        // Update the tracked repositories list
         await get().fetchTrackedRepositories();
 
         toast.success(`Now tracking ${repository.full_name}`);
@@ -285,7 +278,6 @@ export const createGitHubActions = (
       set({ loading: true, error: null });
 
       try {
-        // Call our Supabase Edge Function to fetch the issues
         const { data, error } = await supabase.functions.invoke(
           "github-oauth",
           {
@@ -340,7 +332,6 @@ export const createGitHubActions = (
       set({ loading: true, error: null });
 
       try {
-        // Delete the GitHub connection
         const { error } = await supabase
           .from("github_connections")
           .delete()
@@ -348,7 +339,6 @@ export const createGitHubActions = (
 
         if (error) throw error;
 
-        // Reset the state
         set({
           isConnected: false,
           connection: null,

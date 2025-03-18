@@ -18,7 +18,7 @@ serve(async (req) => {
   try {
     const requestBody = await req.json();
     console.log("Request body:", requestBody);
-    const { code, action } = requestBody;
+    const { code, action, redirectUri } = requestBody;
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
@@ -31,6 +31,7 @@ serve(async (req) => {
       hasSupabaseServiceKey: !!supabaseServiceKey,
       hasGithubClientId: !!githubClientId,
       hasGithubClientSecret: !!githubClientSecret,
+      receivedRedirectUri: redirectUri,
     });
     
     if (!supabaseUrl || !supabaseServiceKey || !githubClientId || !githubClientSecret) {
@@ -70,7 +71,15 @@ serve(async (req) => {
     }
 
     if (action === 'exchange') {
-      console.log(`Exchanging GitHub code for token: ${code.substring(0, 5)}...`);
+      console.log(`Exchanging GitHub code for token using redirect URI: ${redirectUri}`);
+      
+      if (!redirectUri) {
+        console.error('Missing redirectUri in exchange request');
+        return new Response(
+          JSON.stringify({ error: 'Missing redirectUri parameter' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        );
+      }
       
       // Exchange the GitHub code for an access token
       const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
@@ -82,7 +91,8 @@ serve(async (req) => {
         body: JSON.stringify({
           client_id: githubClientId,
           client_secret: githubClientSecret,
-          code
+          code,
+          redirect_uri: redirectUri
         })
       });
 
