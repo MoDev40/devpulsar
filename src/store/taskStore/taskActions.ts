@@ -1,7 +1,6 @@
-
-import { toast } from 'sonner';
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from "@/store/authStore";
 import {
   fetchTasks,
   createTask,
@@ -9,12 +8,14 @@ import {
   removeTask,
   updateTask,
   fetchTaskById,
-} from '@/api/taskApi';
-import { Task, TaskCategory, TaskPriority } from '@/types';
-import { TaskStore } from './taskTypes';
+} from "@/api/taskApi";
+import { Task, TaskCategory, TaskPriority } from "@/types";
+import { TaskStore } from "./taskTypes";
 
 export const createTaskActions = (
-  set: (state: Partial<TaskStore> | ((state: TaskStore) => Partial<TaskStore>)) => void,
+  set: (
+    state: Partial<TaskStore> | ((state: TaskStore) => Partial<TaskStore>)
+  ) => void,
   get: () => TaskStore
 ) => {
   // Channel reference for Supabase real-time
@@ -54,7 +55,13 @@ export const createTaskActions = (
       }
 
       try {
-        const newTask = await createTask(user.id, title, category, priority, dueDate);
+        const newTask = await createTask(
+          user.id,
+          title,
+          category,
+          priority,
+          dueDate
+        );
 
         if (newTask) {
           // Add to local state optimistically
