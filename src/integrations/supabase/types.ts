@@ -199,6 +199,7 @@ export type Database = {
           category: string
           completed: boolean
           created_at: string
+          due_date: string | null
           github_issue_url: string | null
           id: string
           priority: string
@@ -209,6 +210,7 @@ export type Database = {
           category: string
           completed?: boolean
           created_at?: string
+          due_date?: string | null
           github_issue_url?: string | null
           id?: string
           priority: string
@@ -219,6 +221,7 @@ export type Database = {
           category?: string
           completed?: boolean
           created_at?: string
+          due_date?: string | null
           github_issue_url?: string | null
           id?: string
           priority?: string
