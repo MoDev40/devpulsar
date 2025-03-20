@@ -1,3 +1,4 @@
+
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
@@ -50,24 +51,25 @@ serve(async (req) => {
     // Create a Supabase client with the service role key
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
-    // Get the user from the request
+    // For the exchange action, we can use user authorization optionally - not required
+    // This allows non-authenticated users to connect with GitHub
+    let user = null;
+
+    // Only try to get the user if we have an auth header
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Missing Authorization header' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
-      );
-    }
-    
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-    
-    if (userError || !user) {
-      console.error('Error getting user:', userError);
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized', details: userError }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
-      );
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '');
+      const { data: userData, error: userError } = await supabase.auth.getUser(token);
+      
+      if (!userError && userData?.user) {
+        user = userData.user;
+        console.log('User authenticated:', user.id);
+      } else {
+        // Log the error but don't fail - we'll create an anonymous session
+        console.log('Auth error but proceeding:', userError);
+      }
+    } else {
+      console.log('No Authorization header provided - proceeding with anonymous access');
     }
 
     if (action === 'exchange') {
@@ -143,56 +145,81 @@ serve(async (req) => {
         );
       }
       
-      // Store or update the GitHub connection in our database
-      const { data: connectionData, error: connectionError } = await supabase
-        .from('github_connections')
-        .upsert({
-          user_id: user.id,
-          access_token,
-          refresh_token: refresh_token || null,
-          github_username: githubUser.login,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id'
-        })
-        .select('id');
-      
-      if (connectionError) {
-        console.error('Error storing GitHub connection:', connectionError);
-        return new Response(
-          JSON.stringify({ error: 'Failed to store GitHub connection', details: connectionError }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-        );
+      // If we have a user, store the connection
+      let connectionId = null;
+      if (user) {
+        // Store or update the GitHub connection in our database
+        const { data: connectionData, error: connectionError } = await supabase
+          .from('github_connections')
+          .upsert({
+            user_id: user.id,
+            access_token,
+            refresh_token: refresh_token || null,
+            github_username: githubUser.login,
+            updated_at: new Date().toISOString()
+          }, {
+            onConflict: 'user_id'
+          })
+          .select('id');
+        
+        if (connectionError) {
+          console.error('Error storing GitHub connection:', connectionError);
+          return new Response(
+            JSON.stringify({ error: 'Failed to store GitHub connection', details: connectionError }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+          );
+        }
+        
+        connectionId = connectionData?.[0]?.id;
+      } else {
+        console.log("No authenticated user - not storing connection");
+        // For anonymous users, we don't store the connection but return the data
       }
 
       return new Response(
         JSON.stringify({ 
           success: true, 
           github_username: githubUser.login,
-          connection_id: connectionData?.[0]?.id 
+          connection_id: connectionId,
+          access_token // Include the token in the response
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       );
     } else if (action === 'repositories') {
-      // Get the user's GitHub access token from our database
-      const { data: connection, error: connectionError } = await supabase
-        .from('github_connections')
-        .select('access_token')
-        .eq('user_id', user.id)
-        .single();
-      
-      if (connectionError || !connection) {
-        console.error('Error getting GitHub connection:', connectionError);
+      // For subsequent actions, we still need a user or access token
+      if (!user && !requestBody.access_token) {
         return new Response(
-          JSON.stringify({ error: 'GitHub connection not found' }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
+          JSON.stringify({ error: 'Authentication required' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
         );
+      }
+
+      let accessToken = requestBody.access_token;
+      
+      // If we have a user but no token provided, get from database
+      if (!accessToken && user) {
+        // Get the user's GitHub access token from our database
+        const { data: connection, error: connectionError } = await supabase
+          .from('github_connections')
+          .select('access_token')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (connectionError || !connection) {
+          console.error('Error getting GitHub connection:', connectionError);
+          return new Response(
+            JSON.stringify({ error: 'GitHub connection not found' }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
+          );
+        }
+        
+        accessToken = connection.access_token;
       }
 
       // Fetch the user's repositories from GitHub
       const reposResponse = await fetch('https://api.github.com/user/repos?sort=updated&per_page=100', {
         headers: {
-          'Authorization': `token ${connection.access_token}`,
+          'Authorization': `token ${accessToken}`,
           'Accept': 'application/vnd.github.v3+json'
         }
       });
@@ -223,6 +250,14 @@ serve(async (req) => {
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       );
     } else if (action === 'track') {
+      // For these actions, we need a user
+      if (!user) {
+        return new Response(
+          JSON.stringify({ error: 'Authentication required' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+        );
+      }
+      
       const { repo_id, repo_owner, repo_name, track_issues, track_pull_requests } = await req.json();
       
       // Store the repo tracking preferences
@@ -254,6 +289,14 @@ serve(async (req) => {
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       );
     } else if (action === 'issues') {
+      // For these actions, we need a user
+      if (!user) {
+        return new Response(
+          JSON.stringify({ error: 'Authentication required' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+        );
+      }
+      
       const { repo_owner, repo_name } = await req.json();
       
       // Get the user's GitHub access token from our database

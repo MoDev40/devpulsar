@@ -4,6 +4,7 @@ import { GitHubConnection, GitHubRepository, GitHubIssue, GitHubTrackingPreferen
 export interface GitHubState {
   isConnected: boolean;
   connection: GitHubConnection | null;
+  githubAccessToken: string | null; // Add this for anonymous access
   repositories: GitHubRepository[];
   trackedRepositories: GitHubTrackingPreference[];
   selectedRepository: GitHubRepository | null;
@@ -16,7 +17,7 @@ export interface GitHubStore extends GitHubState {
   // Actions
   connectGitHub: (state: string, redirectUri: string) => Promise<void>;
   handleGitHubCallback: (code: string) => Promise<any>;
-  fetchRepositories: () => Promise<void>;
+  fetchRepositories: (accessToken?: string | null) => Promise<void>;
   fetchTrackedRepositories: () => Promise<void>;
   trackRepository: (repository: GitHubRepository, trackIssues: boolean, trackPullRequests: boolean) => Promise<void>;
   selectRepository: (repository: GitHubRepository | null) => void;

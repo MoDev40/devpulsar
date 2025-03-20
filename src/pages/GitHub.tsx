@@ -7,9 +7,11 @@ import GitHubIssueList from '@/components/github/GitHubIssueList';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useAuthStore } from '@/store/authStore';
 
 const GitHub: React.FC = () => {
   const { isConnected, selectedRepository, handleGitHubCallback } = useGitHubStore();
+  const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState('repositories');
   const [processingOAuth, setProcessingOAuth] = useState(false);
   const [oauthError, setOauthError] = useState<string | null>(null);
@@ -124,6 +126,16 @@ const GitHub: React.FC = () => {
             <code className="bg-muted px-1 py-0.5 rounded text-xs ml-1">
               {window.location.origin}/github
             </code>
+          </p>
+        </div>
+      )}
+      
+      {!user && !isConnected && (
+        <div className="mb-6 p-4 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
+          <h3 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2">Anonymous GitHub Access</h3>
+          <p className="text-yellow-700 dark:text-yellow-300">
+            You are not logged in. You can still connect to GitHub, but your connection will not be saved 
+            between sessions. Some features may be limited.
           </p>
         </div>
       )}

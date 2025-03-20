@@ -18,34 +18,33 @@ export const createGitHubActions = (
 ) => {
   return {
     connectGitHub: async (state: string, redirectUri: string) => {
-      const { user } = useAuthStore.getState();
-
-      if (!user) {
-        toast.error("You must be logged in to connect GitHub");
-        return;
-      }
-
       set({ loading: true, error: null });
 
       try {
-        const { data: existingConnection } = await supabase
-          .from("github_connections")
-          .select("id, github_username, created_at, updated_at")
-          .eq("user_id", user.id)
-          .single();
+        // We don't require authentication to start the GitHub flow
+        // Check if we already have a connection
+        const { user } = useAuthStore.getState();
+        
+        if (user) {
+          const { data: existingConnection } = await supabase
+            .from("github_connections")
+            .select("id, github_username, created_at, updated_at")
+            .eq("user_id", user.id)
+            .single();
 
-        if (existingConnection) {
-          set({
-            isConnected: true,
-            connection: {
-              id: existingConnection.id,
-              github_username: existingConnection.github_username,
-              created_at: new Date(existingConnection.created_at),
-              updated_at: new Date(existingConnection.updated_at),
-            },
-            loading: false,
-          });
-          return;
+          if (existingConnection) {
+            set({
+              isConnected: true,
+              connection: {
+                id: existingConnection.id,
+                github_username: existingConnection.github_username,
+                created_at: new Date(existingConnection.created_at),
+                updated_at: new Date(existingConnection.updated_at),
+              },
+              loading: false,
+            });
+            return;
+          }
         }
         
         const githubClientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
@@ -89,13 +88,6 @@ export const createGitHubActions = (
     },
 
     handleGitHubCallback: async (code: string) => {
-      const { user } = useAuthStore.getState();
-
-      if (!user) {
-        toast.error("You must be logged in to connect GitHub");
-        throw new Error("User not authenticated");
-      }
-
       set({ loading: true, error: null });
 
       try {
@@ -104,12 +96,28 @@ export const createGitHubActions = (
         const redirectUri = `${window.location.origin}/github`;
         console.log("Using redirect URI for token exchange:", redirectUri);
 
+        // Allow anonymous GitHub connection if user is not authenticated
+        const { user } = useAuthStore.getState();
+        let requestHeaders = {};
+        
+        // Only add authorization header if user is logged in
+        if (user) {
+          const { data } = await supabase.auth.getSession();
+          if (data.session?.access_token) {
+            requestHeaders = {
+              Authorization: `Bearer ${data.session.access_token}`
+            };
+          }
+        }
+
+        // Exchange the code for a token
         const { data, error } = await supabase.functions.invoke("github-oauth", {
           body: { 
             code, 
             action: "exchange",
             redirectUri: redirectUri
           },
+          headers: requestHeaders
         });
 
         if (error) {
@@ -127,21 +135,26 @@ export const createGitHubActions = (
 
         console.log("GitHub token exchange successful", data);
 
+        // Store access token for anonymous users (we'll use it for API calls)
+        const githubAccessToken = data.access_token;
+        
         set({
           isConnected: true,
-          connection: {
+          connection: data.connection_id ? {
             id: data.connection_id,
             github_username: data.github_username,
             created_at: new Date(),
             updated_at: new Date(),
-          },
+          } : null,
+          githubAccessToken,  // Store the token to use it for API calls
           loading: false,
         });
 
         toast.success("GitHub account connected successfully!");
         
         setTimeout(() => {
-          get().fetchRepositories();
+          // Use the token for anonymous users
+          get().fetchRepositories(githubAccessToken);
         }, 500);
 
         return data;
@@ -153,21 +166,19 @@ export const createGitHubActions = (
       }
     },
 
-    fetchRepositories: async () => {
-      const { user } = useAuthStore.getState();
-
-      if (!user) {
-        toast.error("You must be logged in to fetch repositories");
-        return;
-      }
-
+    fetchRepositories: async (accessToken = null) => {
       set({ loading: true, error: null });
 
       try {
+        // If an access token is provided, use it (anonymous flow)
+        // Otherwise use the auth flow
         const { data, error } = await supabase.functions.invoke(
           "github-oauth",
           {
-            body: { action: "repositories" },
+            body: { 
+              action: "repositories",
+              access_token: accessToken || get().githubAccessToken
+            },
           }
         );
 
