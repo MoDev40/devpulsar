@@ -1,124 +1,144 @@
-import React from "react";
-import { Link, useLocation } from "react-router-dom";
-import { useAuthStore } from "@/store/authStore";
-import { CustomButton } from "@/components/ui/custom-button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { Menu, X, LogOut, Github } from "lucide-react";
 
-const Header: React.FC = () => {
+import React from 'react';
+import { Clock, CheckSquare, Github, LogOut } from 'lucide-react';
+import { CustomButton } from '@/components/ui/custom-button';
+import { useTimerStore } from '@/store/timerStore';
+import { useAuthStore } from '@/store/authStore';
+import { toast } from 'sonner';
+
+interface HeaderProps {
+  activeTab: 'tasks' | 'timer';
+  setActiveTab: (tab: 'tasks' | 'timer') => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
+  const { mode, setTimerMode } = useTimerStore();
   const { user, signOut } = useAuthStore();
-  const location = useLocation();
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [showTimerModes, setShowTimerModes] = React.useState(false);
 
-  const isActive = (path: string) => {
-    return location.pathname === path;
+  const handleTimerModeChange = (timerMode: 'pomodoro' | 'progress') => {
+    setTimerMode(timerMode);
+    setShowTimerModes(false);
   };
-
+  
   const handleSignOut = async () => {
-    await signOut();
-  };
-
-  const closeMenu = () => {
-    setIsMenuOpen(false);
+    try {
+      await signOut();
+    } catch (error) {
+      toast.error('Failed to log out');
+    }
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center">
-        <div className="mr-4 flex">
-          <Link to="/" className="mr-6 flex items-center space-x-2">
-            <span className="font-bold capitalize">devpulsar</span>
-          </Link>
+    <header className="w-full py-6 mb-8 border-b border-border/40">
+      <div className="container px-4 mx-auto">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+              <span className="text-white font-semibold">D</span>
+            </div>
+            <h1 className="text-2xl font-medium">DevPulsar</h1>
+          </div>
 
-          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
-            <Link
-              to="/timer"
-              className={`transition-colors hover:text-foreground/80 ${
-                isActive("/timer") ? "text-foreground" : "text-foreground/60"
-              }`}
-            >
-              Timer
-            </Link>
-            <Link
-              to="/github"
-              className={`transition-colors hover:text-foreground/80 ${
-                isActive("/github") ? "text-foreground" : "text-foreground/60"
-              }`}
-            >
-              GitHub
-            </Link>
-          </nav>
-        </div>
-
-        <div className="flex flex-1 items-center justify-end space-x-2">
-          {user ? (
-            <>
-              <div className="hidden md:flex items-center">
-                <Link to="/github">
-                  <CustomButton variant="ghost" size="sm" className="gap-2">
-                    <Github className="h-4 w-4" />
-                    GitHub
-                  </CustomButton>
-                </Link>
-                <CustomButton
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleSignOut}
-                  className="gap-2"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Sign out
-                </CustomButton>
-              </div>
-              <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-                <SheetTrigger asChild className="md:hidden">
-                  <Button variant="ghost" size="icon">
-                    {isMenuOpen ? (
-                      <X className="h-5 w-5" />
-                    ) : (
-                      <Menu className="h-5 w-5" />
+          <div className="flex items-center space-x-4">
+            <div className="hidden sm:flex bg-muted rounded-lg p-1">
+              <CustomButton
+                variant={activeTab === 'tasks' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setActiveTab('tasks')}
+                className="flex items-center"
+              >
+                <CheckSquare className="w-4 h-4 mr-2" />
+                Tasks
+              </CustomButton>
+              
+              <CustomButton
+                variant={activeTab === 'timer' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setActiveTab('timer')}
+                className="flex items-center relative"
+              >
+                <Clock className="w-4 h-4 mr-2" />
+                Timer
+                {activeTab === 'timer' && (
+                  <div className="absolute top-full mt-2 right-0 z-10">
+                    {showTimerModes && (
+                      <div className="py-1 bg-white rounded-md shadow-lg border border-border/40 animate-fade-in">
+                        <button
+                          className={`block w-full px-4 py-2 text-left text-sm ${
+                            mode === 'pomodoro' ? 'bg-muted' : 'hover:bg-muted'
+                          }`}
+                          onClick={() => handleTimerModeChange('pomodoro')}
+                        >
+                          Pomodoro
+                        </button>
+                        <button
+                          className={`block w-full px-4 py-2 text-left text-sm ${
+                            mode === 'progress' ? 'bg-muted' : 'hover:bg-muted'
+                          }`}
+                          onClick={() => handleTimerModeChange('progress')}
+                        >
+                          Progress
+                        </button>
+                      </div>
                     )}
-                    <span className="sr-only">Toggle Menu</span>
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="right">
-                  <nav className="flex flex-col gap-4 text-lg font-medium">
-                    <Link
-                      to="/"
-                      onClick={closeMenu}
-                      className="flex items-center gap-2 hover:text-primary"
-                    >
-                      Tasks
-                    </Link>
-                    <Link
-                      to="/github"
-                      onClick={closeMenu}
-                      className="flex items-center gap-2 hover:text-primary"
-                    >
-                      <Github className="h-4 w-4" />
-                      GitHub
-                    </Link>
-                    <button
-                      onClick={() => {
-                        closeMenu();
-                        handleSignOut();
-                      }}
-                      className="flex items-center gap-2 hover:text-primary"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      Sign out
-                    </button>
-                  </nav>
-                </SheetContent>
-              </Sheet>
-            </>
-          ) : (
-            <Link to="/auth">
-              <CustomButton size="sm">Sign in</CustomButton>
-            </Link>
-          )}
+                  </div>
+                )}
+              </CustomButton>
+            </div>
+
+            {user ? (
+              <CustomButton variant="glass" size="sm" className="flex items-center" onClick={handleSignOut}>
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </CustomButton>
+            ) : (
+              <CustomButton variant="glass" size="sm" className="flex items-center">
+                <Github className="w-4 h-4 mr-2" />
+                Login
+              </CustomButton>
+            )}
+          </div>
         </div>
+        
+        <div className="sm:hidden flex mt-4 bg-muted rounded-lg p-1">
+          <CustomButton
+            variant={activeTab === 'tasks' ? 'default' : 'ghost'}
+            onClick={() => setActiveTab('tasks')}
+            className="flex-1 flex items-center justify-center"
+          >
+            <CheckSquare className="w-4 h-4 mr-2" />
+            Tasks
+          </CustomButton>
+          
+          <CustomButton
+            variant={activeTab === 'timer' ? 'default' : 'ghost'}
+            onClick={() => setActiveTab('timer')}
+            className="flex-1 flex items-center justify-center"
+          >
+            <Clock className="w-4 h-4 mr-2" />
+            Timer
+          </CustomButton>
+        </div>
+        
+        {activeTab === 'timer' && (
+          <div className="mt-4 flex justify-center space-x-2">
+            <CustomButton
+              variant={mode === 'pomodoro' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => handleTimerModeChange('pomodoro')}
+            >
+              Pomodoro
+            </CustomButton>
+            <CustomButton
+              variant={mode === 'progress' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => handleTimerModeChange('progress')}
+            >
+              Progress
+            </CustomButton>
+          </div>
+        )}
       </div>
     </header>
   );

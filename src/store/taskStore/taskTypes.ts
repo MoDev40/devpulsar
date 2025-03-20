@@ -13,8 +13,7 @@ export interface TaskStore extends TaskState {
   addTask: (
     title: string,
     category: TaskCategory,
-    priority: TaskPriority,
-    github_issue_url?: string
+    priority: TaskPriority
   ) => Promise<void>;
   toggleTaskCompletion: (id: string, isComplete: boolean) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;

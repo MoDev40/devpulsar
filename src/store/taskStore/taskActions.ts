@@ -43,8 +43,7 @@ export const createTaskActions = (
     addTask: async (
       title: string,
       category: TaskCategory,
-      priority: TaskPriority,
-      github_issue_url?: string
+      priority: TaskPriority
     ) => {
       const { user } = useAuthStore.getState();
 
@@ -54,7 +53,7 @@ export const createTaskActions = (
       }
 
       try {
-        const newTask = await createTask(user.id, title, category, priority, github_issue_url);
+        const newTask = await createTask(user.id, title, category, priority);
 
         if (newTask) {
           // Add to local state optimistically

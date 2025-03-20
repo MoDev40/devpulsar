@@ -24,7 +24,6 @@ export async function fetchTasks(userId: string | undefined) {
       category: task.category as TaskCategory,
       priority: task.priority as TaskPriority,
       createdAt: new Date(task.created_at),
-      github_issue_url: task.github_issue_url
     }));
 
     return transformedTasks;
@@ -39,8 +38,7 @@ export async function createTask(
   userId: string | undefined, 
   title: string, 
   category: TaskCategory, 
-  priority: TaskPriority,
-  github_issue_url?: string
+  priority: TaskPriority
 ) {
   if (!userId) {
     toast.error('Please log in to add tasks');
@@ -54,7 +52,6 @@ export async function createTask(
     category,
     priority,
     createdAt: new Date(),
-    github_issue_url
   };
   
   try {
@@ -66,7 +63,6 @@ export async function createTask(
       category: newTask.category,
       priority: newTask.priority,
       created_at: newTask.createdAt.toISOString(),
-      github_issue_url: newTask.github_issue_url
     });
 
     if (error) throw error;
