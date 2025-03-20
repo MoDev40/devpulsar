@@ -1,10 +1,14 @@
 
 import React, { useState } from 'react';
 import { Task } from '@/types';
-import { Trash, Edit, Check, X } from 'lucide-react';
+import { Trash, Edit, Check, X, Calendar } from 'lucide-react';
 import { CustomButton } from '@/components/ui/custom-button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useTaskStore } from '@/store/taskStore';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { format, isAfter, isBefore, isToday, addDays } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface TaskItemProps {
   task: Task;
@@ -16,12 +20,14 @@ const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
   const [editedTitle, setEditedTitle] = useState(task.title);
   const [editedCategory, setEditedCategory] = useState(task.category);
   const [editedPriority, setEditedPriority] = useState(task.priority);
+  const [editedDueDate, setEditedDueDate] = useState<Date | null>(task.dueDate || null);
 
   const handleEdit = () => {
     editTask(task.id, {
       title: editedTitle,
       category: editedCategory,
       priority: editedPriority,
+      dueDate: editedDueDate,
     });
     setIsEditing(false);
   };
@@ -30,6 +36,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
     setEditedTitle(task.title);
     setEditedCategory(task.category);
     setEditedPriority(task.priority);
+    setEditedDueDate(task.dueDate || null);
     setIsEditing(false);
   };
 
@@ -38,6 +45,43 @@ const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
     medium: 'bg-yellow-50 text-yellow-700',
     high: 'bg-red-50 text-red-700',
   };
+
+  // Function to determine the due date status and styling
+  const getDueDateStatus = () => {
+    if (!task.dueDate) return { text: '', className: '' };
+    
+    const now = new Date();
+    const tomorrow = addDays(now, 1);
+    
+    if (task.completed) {
+      return { 
+        text: `Due: ${format(task.dueDate, 'MMM d')}`, 
+        className: 'text-muted-foreground line-through' 
+      };
+    } else if (isBefore(task.dueDate, now) && !isToday(task.dueDate)) {
+      return { 
+        text: `Overdue: ${format(task.dueDate, 'MMM d')}`, 
+        className: 'text-red-600 font-medium' 
+      };
+    } else if (isToday(task.dueDate)) {
+      return { 
+        text: 'Due today', 
+        className: 'text-amber-600 font-medium' 
+      };
+    } else if (isBefore(task.dueDate, tomorrow)) {
+      return { 
+        text: 'Due tomorrow', 
+        className: 'text-blue-600 font-medium' 
+      };
+    }
+    
+    return { 
+      text: `Due: ${format(task.dueDate, 'MMM d')}`, 
+      className: 'text-muted-foreground' 
+    };
+  };
+
+  const dueDateStatus = getDueDateStatus();
 
   if (isEditing) {
     return (
@@ -74,6 +118,40 @@ const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
               </select>
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <CustomButton
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-1 h-7 text-xs"
+                  >
+                    <Calendar className="h-3 w-3" />
+                    {editedDueDate ? format(editedDueDate, 'MMM d') : 'Set date'}
+                  </CustomButton>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={editedDueDate || undefined}
+                    onSelect={setEditedDueDate}
+                    initialFocus
+                  />
+                  {editedDueDate && (
+                    <div className="p-2 border-t border-border">
+                      <CustomButton 
+                        type="button" 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => setEditedDueDate(null)}
+                        className="text-xs w-full"
+                      >
+                        Clear date
+                      </CustomButton>
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
             </div>
             
             <div className="ml-auto flex space-x-2">
@@ -124,6 +202,12 @@ const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
           <span className={`px-2 py-0.5 rounded-full text-xs ${priorityColors[task.priority]}`}>
             {task.priority}
           </span>
+          {task.dueDate && (
+            <span className={cn("text-xs flex items-center gap-1", dueDateStatus.className)}>
+              <Calendar className="h-3 w-3" />
+              {dueDateStatus.text}
+            </span>
+          )}
         </div>
       </div>
       

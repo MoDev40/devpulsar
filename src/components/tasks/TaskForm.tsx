@@ -2,21 +2,26 @@
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { CustomButton } from '@/components/ui/custom-button';
-import { Plus } from 'lucide-react';
+import { Plus, Calendar } from 'lucide-react';
 import { TaskCategory, TaskPriority } from '@/types';
 import { useTaskStore } from '@/store/taskStore';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { format } from 'date-fns';
 
 const TaskForm: React.FC = () => {
   const { addTask } = useTaskStore();
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskCategory, setNewTaskCategory] = useState<TaskCategory>('feature');
   const [newTaskPriority, setNewTaskPriority] = useState<TaskPriority>('medium');
+  const [dueDate, setDueDate] = useState<Date | null>(null);
   
   const handleAddTask = (e: React.FormEvent) => {
     e.preventDefault();
     if (newTaskTitle.trim()) {
-      addTask(newTaskTitle.trim(), newTaskCategory, newTaskPriority);
+      addTask(newTaskTitle.trim(), newTaskCategory, newTaskPriority, dueDate);
       setNewTaskTitle('');
+      setDueDate(null);
     }
   };
   
@@ -36,7 +41,7 @@ const TaskForm: React.FC = () => {
         </CustomButton>
       </div>
       
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-3 items-end">
         <div>
           <label htmlFor="category" className="block text-xs text-muted-foreground mb-1">
             Category
@@ -70,6 +75,44 @@ const TaskForm: React.FC = () => {
             <option value="high">High</option>
           </select>
         </div>
+
+        <div>
+          <label className="block text-xs text-muted-foreground mb-1">
+            Due Date
+          </label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <CustomButton
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 h-9"
+              >
+                <Calendar className="h-4 w-4" />
+                {dueDate ? format(dueDate, 'PPP') : 'Set due date'}
+              </CustomButton>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <CalendarComponent
+                mode="single"
+                selected={dueDate || undefined}
+                onSelect={setDueDate}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        {dueDate && (
+          <CustomButton 
+            type="button" 
+            variant="ghost" 
+            size="sm"
+            onClick={() => setDueDate(null)}
+            className="text-xs"
+          >
+            Clear date
+          </CustomButton>
+        )}
       </div>
     </form>
   );

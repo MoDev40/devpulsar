@@ -10,6 +10,7 @@ export interface Task {
   category: TaskCategory;
   priority: TaskPriority;
   createdAt: Date;
+  dueDate?: Date | null; // Optional due date
 }
 
 export type TimerMode = 'pomodoro' | 'progress';

@@ -9,6 +9,8 @@ interface TaskFiltersProps {
   setPriorityFilter: (priority: TaskPriority | 'all') => void;
   showCompleted: boolean;
   setShowCompleted: (show: boolean) => void;
+  dueDateFilter: 'all' | 'overdue' | 'today' | 'upcoming' | 'none';
+  setDueDateFilter: (filter: 'all' | 'overdue' | 'today' | 'upcoming' | 'none') => void;
 }
 
 const TaskFilters: React.FC<TaskFiltersProps> = ({
@@ -18,6 +20,8 @@ const TaskFilters: React.FC<TaskFiltersProps> = ({
   setPriorityFilter,
   showCompleted,
   setShowCompleted,
+  dueDateFilter,
+  setDueDateFilter,
 }) => {
   return (
     <div className="mb-6 glass-card p-4 rounded-lg space-y-3 animate-fade-in">
@@ -55,6 +59,24 @@ const TaskFilters: React.FC<TaskFiltersProps> = ({
             <option value="low">Low</option>
             <option value="medium">Medium</option>
             <option value="high">High</option>
+          </select>
+        </div>
+        
+        <div>
+          <label htmlFor="dueDateFilter" className="block text-xs text-muted-foreground mb-1">
+            Due Date
+          </label>
+          <select
+            id="dueDateFilter"
+            value={dueDateFilter}
+            onChange={(e) => setDueDateFilter(e.target.value as any)}
+            className="px-2 py-1 text-sm border border-input rounded-md"
+          >
+            <option value="all">All Due Dates</option>
+            <option value="overdue">Overdue</option>
+            <option value="today">Due Today</option>
+            <option value="upcoming">Upcoming</option>
+            <option value="none">No Due Date</option>
           </select>
         </div>
         

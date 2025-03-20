@@ -24,6 +24,7 @@ export async function fetchTasks(userId: string | undefined) {
       category: task.category as TaskCategory,
       priority: task.priority as TaskPriority,
       createdAt: new Date(task.created_at),
+      dueDate: task.due_date ? new Date(task.due_date) : null,
     }));
 
     return transformedTasks;
@@ -38,7 +39,8 @@ export async function createTask(
   userId: string | undefined, 
   title: string, 
   category: TaskCategory, 
-  priority: TaskPriority
+  priority: TaskPriority,
+  dueDate?: Date | null
 ) {
   if (!userId) {
     toast.error('Please log in to add tasks');
@@ -52,6 +54,7 @@ export async function createTask(
     category,
     priority,
     createdAt: new Date(),
+    dueDate: dueDate || null,
   };
   
   try {
@@ -63,6 +66,7 @@ export async function createTask(
       category: newTask.category,
       priority: newTask.priority,
       created_at: newTask.createdAt.toISOString(),
+      due_date: newTask.dueDate ? newTask.dueDate.toISOString() : null,
     });
 
     if (error) throw error;
@@ -110,9 +114,20 @@ export async function removeTask(id: string) {
 
 export async function updateTask(id: string, updates: Partial<Omit<Task, 'id' | 'createdAt'>>) {
   try {
+    // Convert dueDate to ISO string format if it exists
+    const formattedUpdates = {
+      ...updates,
+      due_date: updates.dueDate ? updates.dueDate.toISOString() : updates.dueDate === null ? null : undefined,
+    };
+    
+    // Remove the dueDate property as we're using due_date for the database
+    if ('dueDate' in formattedUpdates) {
+      delete formattedUpdates.dueDate;
+    }
+    
     const { error } = await supabase
       .from('tasks')
-      .update(updates)
+      .update(formattedUpdates)
       .eq('id', id);
 
     if (error) throw error;
@@ -142,6 +157,7 @@ export async function fetchTaskById(id: string) {
       category: data.category as TaskCategory,
       priority: data.priority as TaskPriority,
       createdAt: new Date(data.created_at),
+      dueDate: data.due_date ? new Date(data.due_date) : null,
     } : null;
   } catch (error) {
     console.error('Error fetching task:', error);
