@@ -1,14 +1,14 @@
 
 import React from 'react';
-import { Clock, CheckSquare, Github, LogOut } from 'lucide-react';
+import { Clock, CheckSquare, Github, LogOut, BarChart2, FileText } from 'lucide-react';
 import { CustomButton } from '@/components/ui/custom-button';
 import { useTimerStore } from '@/store/timerStore';
 import { useAuthStore } from '@/store/authStore';
 import { toast } from 'sonner';
 
 interface HeaderProps {
-  activeTab: 'tasks' | 'timer';
-  setActiveTab: (tab: 'tasks' | 'timer') => void;
+  activeTab: 'tasks' | 'timer' | 'dashboard' | 'notes';
+  setActiveTab: (tab: 'tasks' | 'timer' | 'dashboard' | 'notes') => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
@@ -50,6 +50,26 @@ const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
               >
                 <CheckSquare className="w-4 h-4 mr-2" />
                 Tasks
+              </CustomButton>
+              
+              <CustomButton
+                variant={activeTab === 'dashboard' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setActiveTab('dashboard')}
+                className="flex items-center"
+              >
+                <BarChart2 className="w-4 h-4 mr-2" />
+                Dashboard
+              </CustomButton>
+              
+              <CustomButton
+                variant={activeTab === 'notes' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setActiveTab('notes')}
+                className="flex items-center"
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                Notes
               </CustomButton>
               
               <CustomButton
@@ -109,6 +129,24 @@ const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
           >
             <CheckSquare className="w-4 h-4 mr-2" />
             Tasks
+          </CustomButton>
+          
+          <CustomButton
+            variant={activeTab === 'dashboard' ? 'default' : 'ghost'}
+            onClick={() => setActiveTab('dashboard')}
+            className="flex-1 flex items-center justify-center"
+          >
+            <BarChart2 className="w-4 h-4 mr-2" />
+            Stats
+          </CustomButton>
+          
+          <CustomButton
+            variant={activeTab === 'notes' ? 'default' : 'ghost'}
+            onClick={() => setActiveTab('notes')}
+            className="flex-1 flex items-center justify-center"
+          >
+            <FileText className="w-4 h-4 mr-2" />
+            Notes
           </CustomButton>
           
           <CustomButton

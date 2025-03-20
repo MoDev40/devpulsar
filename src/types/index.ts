@@ -13,6 +13,14 @@ export interface Task {
   dueDate?: Date | null; // Optional due date
 }
 
+export interface Note {
+  id: string;
+  title: string;
+  content: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export type TimerMode = 'pomodoro' | 'progress';
 
 export interface TimerSettings {
