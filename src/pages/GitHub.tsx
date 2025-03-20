@@ -70,8 +70,8 @@ const GitHub: React.FC = () => {
           receivedState: state,
           savedState,
         });
-        setOauthError("Invalid authentication state. Please try again.");
-        toast.error("Invalid authentication state. Please try again.");
+        setOauthError("Invalid authentication state. Please try connecting again.");
+        toast.error("Invalid authentication state. Please try connecting again.");
         setProcessingOAuth(false);
         
         // Clear URL parameters
@@ -96,8 +96,8 @@ const GitHub: React.FC = () => {
     }
     
     // Log all environment variables for debugging
-    console.info("Environment variables in App:", {
-      NODE_ENV: import.meta.env.NODE_ENV,
+    console.info("Environment variables in GitHub page:", {
+      NODE_ENV: import.meta.env.MODE,
       VITE_GITHUB_CLIENT_ID: import.meta.env.VITE_GITHUB_CLIENT_ID ? "set" : "not set",
       VITE_GITHUB_REDIRECT_URI: import.meta.env.VITE_GITHUB_REDIRECT_URI ? "set" : "not set",
       BASE_URL: import.meta.env.BASE_URL,
@@ -105,6 +105,12 @@ const GitHub: React.FC = () => {
       FULL_URL: window.location.href,
       SEARCH_PARAMS: window.location.search,
     });
+    
+    // Clean up any stale state on component mount if we're not in a callback flow
+    const searchParams = new URLSearchParams(location.search);
+    if (!searchParams.has('code') && !searchParams.has('state')) {
+      localStorage.removeItem("github_oauth_state");
+    }
   }, []);
   
   return (

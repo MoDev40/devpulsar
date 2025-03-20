@@ -10,7 +10,11 @@ const GitHubConnect: React.FC = () => {
   const handleConnect = () => {
     // Generate a new state parameter for this connection attempt
     const state = Math.random().toString(36).substring(2, 15);
+    
+    // Store the state in localStorage to verify during callback
+    // This is critical for security to prevent CSRF attacks
     localStorage.setItem("github_oauth_state", state);
+    console.log("Setting OAuth state in localStorage:", state);
     
     // Get the current URL base to use for redirect
     const redirectUri = `${window.location.origin}/github`;

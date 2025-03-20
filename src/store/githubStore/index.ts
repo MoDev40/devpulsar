@@ -7,7 +7,7 @@ import { createGitHubActions } from './githubActions';
 const initialState: GitHubState = {
   isConnected: false,
   connection: null,
-  githubAccessToken: null, // Add this for anonymous access
+  githubAccessToken: null, // For anonymous access
   repositories: [],
   trackedRepositories: [],
   selectedRepository: null,
