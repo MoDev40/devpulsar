@@ -62,6 +62,7 @@ export async function createTask(
     dueDate: dueDate || null,
     reminder: reminder || null,
     tags: tags || [],
+    sharedWith: [],
   };
   
   try {
