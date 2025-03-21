@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Task, TaskTag } from '@/types';
 import { Trash, Edit, Check, X, Calendar, Clock, Tag, Share2 } from 'lucide-react';
@@ -66,7 +65,32 @@ const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
     high: 'bg-red-50 text-red-700',
   };
 
-  // Function to determine the due date status and styling
+  const getTagIcon = (tag: string) => {
+    switch(tag.toLowerCase()) {
+      case 'frontend':
+      case 'ui':
+        return <div className="text-purple-500"><Tag className="h-3 w-3" /></div>;
+      case 'backend':
+      case 'api':
+        return <div className="text-blue-500"><Tag className="h-3 w-3" /></div>;
+      case 'urgent':
+      case 'important':
+        return <div className="text-red-500"><AlertCircle className="h-3 w-3" /></div>;
+      case 'testing':
+        return <div className="text-green-500"><Tag className="h-3 w-3" /></div>;
+      case 'bug':
+        return <div className="text-amber-500"><Tag className="h-3 w-3" /></div>;
+      case 'research':
+        return <div className="text-teal-500"><Tag className="h-3 w-3" /></div>;
+      case 'meeting':
+        return <div className="text-indigo-500"><Tag className="h-3 w-3" /></div>;
+      case 'planning':
+        return <div className="text-sky-500"><Tag className="h-3 w-3" /></div>;
+      default:
+        return <div className="text-gray-500"><Tag className="h-3 w-3" /></div>;
+    }
+  };
+
   const getDueDateStatus = () => {
     if (!task.dueDate) return { text: '', className: '' };
     
@@ -128,12 +152,10 @@ const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
   const reminderStatus = getReminderStatus();
 
   const handleSetReminder = () => {
-    // Set reminder to 1 hour from now
     const reminderTime = new Date();
     reminderTime.setHours(reminderTime.getHours() + 1);
     setEditedReminder(reminderTime);
     
-    // In a real application, you would integrate with a notification system
     toast.success(`Reminder set for ${format(reminderTime, 'MMM d, h:mm a')}`);
   };
 
@@ -257,6 +279,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
                     key={tag} 
                     className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs flex items-center"
                   >
+                    {getTagIcon(tag)}
                     {tag}
                     <button 
                       onClick={() => handleRemoveTag(tag)}
@@ -362,7 +385,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
                 key={tag} 
                 className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"
               >
-                <Tag className="h-2.5 w-2.5" />
+                {getTagIcon(tag)}
                 {tag}
               </span>
             ))}
