@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/store/authStore";
@@ -9,7 +10,7 @@ import {
   updateTask,
   fetchTaskById,
 } from "@/api/taskApi";
-import { Task, TaskCategory, TaskPriority } from "@/types";
+import { Task, TaskCategory, TaskPriority, TaskTag } from "@/types";
 import { TaskStore } from "./taskTypes";
 
 export const createTaskActions = (
@@ -45,7 +46,9 @@ export const createTaskActions = (
       title: string,
       category: TaskCategory,
       priority: TaskPriority,
-      dueDate?: Date | null
+      dueDate?: Date | null,
+      reminder?: Date | null,
+      tags?: TaskTag[]
     ) => {
       const { user } = useAuthStore.getState();
 
@@ -60,7 +63,9 @@ export const createTaskActions = (
           title,
           category,
           priority,
-          dueDate
+          dueDate,
+          reminder,
+          tags
         );
 
         if (newTask) {
@@ -69,6 +74,21 @@ export const createTaskActions = (
             tasks: [newTask, ...state.tasks],
           }));
           toast.success("Task added");
+
+          // Set up a reminder notification if applicable
+          if (reminder) {
+            const now = new Date();
+            const timeUntilReminder = reminder.getTime() - now.getTime();
+            
+            // Only set the timeout if it's in the future
+            if (timeUntilReminder > 0) {
+              setTimeout(() => {
+                toast.info(`Reminder: ${title}`, {
+                  description: `Your task "${title}" is due soon!`,
+                });
+              }, timeUntilReminder);
+            }
+          }
         }
       } catch (error: any) {
         set({ error: error.message });
@@ -150,6 +170,25 @@ export const createTaskActions = (
       try {
         await updateTask(id, updates);
         toast.success("Task updated");
+        
+        // If we just set a reminder, check if we need to schedule a notification
+        if (updates.reminder) {
+          const now = new Date();
+          const timeUntilReminder = updates.reminder.getTime() - now.getTime();
+          
+          // Only set the timeout if it's in the future
+          if (timeUntilReminder > 0) {
+            // Find the task to get its title
+            const task = get().tasks.find(t => t.id === id);
+            if (task) {
+              setTimeout(() => {
+                toast.info(`Reminder: ${task.title}`, {
+                  description: `Your task "${task.title}" is due soon!`,
+                });
+              }, timeUntilReminder);
+            }
+          }
+        }
       } catch (error: any) {
         try {
           // Fetch the current state to revert changes

@@ -3,6 +3,8 @@ export type TaskCategory = 'bug' | 'feature' | 'enhancement' | 'documentation' |
 
 export type TaskPriority = 'low' | 'medium' | 'high';
 
+export type TaskTag = string;
+
 export interface Task {
   id: string;
   title: string;
@@ -11,6 +13,9 @@ export interface Task {
   priority: TaskPriority;
   createdAt: Date;
   dueDate?: Date | null; // Optional due date
+  tags?: TaskTag[]; // Optional tags for categorization
+  sharedWith?: string[]; // Optional list of user IDs the task is shared with
+  reminder?: Date | null; // Optional reminder date/time
 }
 
 export interface Note {

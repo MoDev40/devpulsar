@@ -1,5 +1,5 @@
 
-import { Task, TaskCategory, TaskPriority } from '@/types';
+import { Task, TaskCategory, TaskPriority, TaskTag } from '@/types';
 
 export interface TaskState {
   tasks: Task[];
@@ -16,7 +16,9 @@ export interface TaskStore extends TaskState {
     title: string,
     category: TaskCategory,
     priority: TaskPriority,
-    dueDate?: Date | null
+    dueDate?: Date | null,
+    reminder?: Date | null,
+    tags?: TaskTag[]
   ) => Promise<void>;
   toggleTaskCompletion: (id: string, isComplete: boolean) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;

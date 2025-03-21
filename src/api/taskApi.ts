@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Task, TaskCategory, TaskPriority } from '@/types';
+import { Task, TaskCategory, TaskPriority, TaskTag } from '@/types';
 import { toast } from 'sonner';
 
 export async function fetchTasks(userId: string | undefined) {
@@ -25,6 +25,9 @@ export async function fetchTasks(userId: string | undefined) {
       priority: task.priority as TaskPriority,
       createdAt: new Date(task.created_at),
       dueDate: task.due_date ? new Date(task.due_date) : null,
+      reminder: task.reminder ? new Date(task.reminder) : null,
+      tags: task.tags || [],
+      sharedWith: task.shared_with || [],
     }));
 
     return transformedTasks;
@@ -40,7 +43,9 @@ export async function createTask(
   title: string, 
   category: TaskCategory, 
   priority: TaskPriority,
-  dueDate?: Date | null
+  dueDate?: Date | null,
+  reminder?: Date | null,
+  tags?: TaskTag[]
 ) {
   if (!userId) {
     toast.error('Please log in to add tasks');
@@ -55,6 +60,8 @@ export async function createTask(
     priority,
     createdAt: new Date(),
     dueDate: dueDate || null,
+    reminder: reminder || null,
+    tags: tags || [],
   };
   
   try {
@@ -67,6 +74,8 @@ export async function createTask(
       priority: newTask.priority,
       created_at: newTask.createdAt.toISOString(),
       due_date: newTask.dueDate ? newTask.dueDate.toISOString() : null,
+      reminder: newTask.reminder ? newTask.reminder.toISOString() : null,
+      tags: newTask.tags,
     });
 
     if (error) throw error;
@@ -114,15 +123,24 @@ export async function removeTask(id: string) {
 
 export async function updateTask(id: string, updates: Partial<Omit<Task, 'id' | 'createdAt'>>) {
   try {
-    // Convert dueDate to ISO string format if it exists
+    // Convert dates to ISO string format if they exist
     const formattedUpdates = {
       ...updates,
       due_date: updates.dueDate ? updates.dueDate.toISOString() : updates.dueDate === null ? null : undefined,
+      reminder: updates.reminder ? updates.reminder.toISOString() : updates.reminder === null ? null : undefined,
+      tags: updates.tags,
+      shared_with: updates.sharedWith,
     };
     
-    // Remove the dueDate property as we're using due_date for the database
+    // Remove properties that don't match the database schema
     if ('dueDate' in formattedUpdates) {
       delete formattedUpdates.dueDate;
+    }
+    if ('reminder' in formattedUpdates) {
+      delete formattedUpdates.reminder;
+    }
+    if ('sharedWith' in formattedUpdates) {
+      delete formattedUpdates.sharedWith;
     }
     
     const { error } = await supabase
@@ -158,6 +176,9 @@ export async function fetchTaskById(id: string) {
       priority: data.priority as TaskPriority,
       createdAt: new Date(data.created_at),
       dueDate: data.due_date ? new Date(data.due_date) : null,
+      reminder: data.reminder ? new Date(data.reminder) : null,
+      tags: data.tags || [],
+      sharedWith: data.shared_with || [],
     } : null;
   } catch (error) {
     console.error('Error fetching task:', error);
