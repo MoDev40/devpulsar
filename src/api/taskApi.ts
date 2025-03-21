@@ -26,8 +26,8 @@ export async function fetchTasks(userId: string | undefined) {
       createdAt: new Date(task.created_at),
       dueDate: task.due_date ? new Date(task.due_date) : null,
       reminder: task.reminder ? new Date(task.reminder) : null,
-      tags: task.tags || [],
-      sharedWith: task.shared_with || [],
+      tags: Array.isArray(task.tags) ? task.tags : [],
+      sharedWith: Array.isArray(task.shared_with) ? task.shared_with : [],
     }));
 
     return transformedTasks;
@@ -76,6 +76,7 @@ export async function createTask(
       due_date: newTask.dueDate ? newTask.dueDate.toISOString() : null,
       reminder: newTask.reminder ? newTask.reminder.toISOString() : null,
       tags: newTask.tags,
+      shared_with: newTask.sharedWith || [],
     });
 
     if (error) throw error;
@@ -177,8 +178,8 @@ export async function fetchTaskById(id: string) {
       createdAt: new Date(data.created_at),
       dueDate: data.due_date ? new Date(data.due_date) : null,
       reminder: data.reminder ? new Date(data.reminder) : null,
-      tags: data.tags || [],
-      sharedWith: data.shared_with || [],
+      tags: Array.isArray(data.tags) ? data.tags : [],
+      sharedWith: Array.isArray(data.shared_with) ? data.shared_with : [],
     } : null;
   } catch (error) {
     console.error('Error fetching task:', error);

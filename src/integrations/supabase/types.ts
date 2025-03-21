@@ -230,6 +230,9 @@ export type Database = {
           github_issue_url: string | null
           id: string
           priority: string
+          reminder: string | null
+          shared_with: string[] | null
+          tags: string[] | null
           title: string
           user_id: string
         }
@@ -241,6 +244,9 @@ export type Database = {
           github_issue_url?: string | null
           id?: string
           priority: string
+          reminder?: string | null
+          shared_with?: string[] | null
+          tags?: string[] | null
           title: string
           user_id: string
         }
@@ -252,6 +258,9 @@ export type Database = {
           github_issue_url?: string | null
           id?: string
           priority?: string
+          reminder?: string | null
+          shared_with?: string[] | null
+          tags?: string[] | null
           title?: string
           user_id?: string
         }
